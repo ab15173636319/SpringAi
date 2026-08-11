@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<prompts>
+    <prompt name="chat">
+        <identify>回答用户的内容的兜底方式，除开其它方式，就是使用此方式</identify>
+        <type>html</type>
+        <content>
+            以json格式返回{type:'html',msg:‘react的tsx+tailwindcss格式返回’,qute:[为用户提供三条话题]}
+        </content>
+    </prompt>
+    <prompt name="schedule">
+        <identify>计划、规划、文档说明等</identify>
+        <type>markdown</type>
+        <content>
+            以json格式返回{type:'markdown',msg:‘以markdown格式返回’,qute:[为用户提供三条话题]}
+        </content>
+    </prompt>
+    <prompt name="path">
+        <identify>路线规划</identify>
+        <type>html</type>
+        <content>
+            以json格式返回{type:'html',msg:‘react的tsx+tailwindcss格式返回，但使用ul+li等列表标签展示路线规划’}
+        </content>
+    </prompt>
+</prompts>
