@@ -1,7 +1,8 @@
-import {AssistantTypeValue, type Message} from "../../types/Message.ts";
+import { Marked } from "@ts-stack/markdown";
+import { AssistantTypeValue, type Message } from "../../types/Message.ts";
 
 export default function MessageBubble(props: Message) {
-    const {assistant, message} = props;
+    const { assistant, message } = props;
 
 
     return (
@@ -13,12 +14,11 @@ export default function MessageBubble(props: Message) {
                     "flex justify-start"}>
                 <article className={
                     assistant === AssistantTypeValue.User ?
-                        " w-fit bg-gray-200 py-2 px-3 rounded-md"
+                        " w-auto max-w-[75%] bg-gray-200 py-2 px-3 rounded-md"
                         :
-                        ""}>
-                    <p>
-                        {message}
-                    </p>
+                        "w-fit max-w-[75%]  py-2 px-3"}>
+                    <div className="wrap-break-word" dangerouslySetInnerHTML={{ __html: message }}>
+                    </div>
                 </article>
             </div>
 

@@ -28,7 +28,7 @@ public class ChatConfiguration {
     @Bean
     public ChatClient chatClient(ChatModel chatModel, ChatMemory chatMemory, GaodeTools gaodeTools, EmotionUtil emotionUtil, TimeTool timeTool, ReadXmlUtil readXmlUtil) {
         return ChatClient.create(chatModel)
-                .prompt("你是ai助手，言简意赅。以markdown格式返回。")
+                .prompt("你是ai助手，能够根据用户的问题，总结使用工具查到的数据，输出的格式为markdown格式。")
                 .tools(emotionUtil, gaodeTools, timeTool)
                 .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .mutate().build();

@@ -22,7 +22,12 @@ interface IMessage {
     message: string
 }
 
-export  type Message = IMessage
+export type Message = IMessage
 
+interface IMessageSend {
+    id: string
+    message: string
+}
 
+export type MessageSend = IMessageSend
 
