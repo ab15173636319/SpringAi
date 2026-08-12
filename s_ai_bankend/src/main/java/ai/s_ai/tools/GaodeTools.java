@@ -42,8 +42,11 @@ public class GaodeTools {
     }
 
     @Tool(description = "获取用户所在位置的天气情况，需要先获取Ip信息，当用户需要天气信息、用户提到未来/过去的穿着、前往某地、进行某些室外活动时调用，给出穿着、装备建议。")
-    public String getIpWeather(@ToolParam(description = "传入用户所在城市的城市编码（adcode），获取用户所在位置信息") String adcode) throws IOException {
-        String urlStr = amapWeather + "?output=xml&key=" + apiKey + "&city=" + adcode;
+    public String getIpWeather(
+            @ToolParam(description = "城市编码，输入城市的adcode，adcode信息可参考城市编码表，必填") String adcode,
+            @ToolParam(description = "气象类型，可选值：base/all，base:返回实况天气，all:返回预报天气，可选"
+            ) String extensions) throws IOException {
+        String urlStr = amapWeather + "?output=xml&key=" + apiKey + "&city=" + adcode + "&extensions=" + extensions;
         return getString(urlStr);
     }
 

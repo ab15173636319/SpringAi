@@ -27,6 +27,10 @@ config:
     amap_driving: https://restapi.amap.com/v5/direction/driving # 路径规划
     amap_walking: https://restapi.amap.com/v3/direction/walking # 路径规划
     amap_geocode: https://restapi.amap.com/v3/geocode/geo # 地址编码
+    amap_road: https://restapi.amap.com/v3/traffic/status/road # 获取道路交通状态 未使用
+    amap_bus: https://restapi.amap.com/v3/bus/stopid # 获取公交站点信息 未使用
+    amap_etd_driving: https://restapi.amap.com/v4/etd/driving # 高级路线规划 未使用
+
 
 
 

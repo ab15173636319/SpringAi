@@ -11,7 +11,7 @@ type ButtonProps = {
 function Button({ className = "", children, onClick, disabled, onKeyDown }: ButtonProps) {
     return (
         <button disabled={disabled}
-            className={" px-3 p-2 bg-gray-200 text-md rounded-md cursor-pointer hover:bg-gray-300 transition-bg duration-200 disabled:cursor-not-allowed" + className}
+            className={" px-3 p-2 bg-gray-200 text-md rounded-md cursor-pointer hover:bg-gray-300 transition-bg duration-200 disabled:cursor-not-allowed " + className}
             onClick={onClick}
             onKeyDown={onKeyDown}
         >

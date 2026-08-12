@@ -13,8 +13,7 @@ function App() {
 
     return (
         <>
-
-            <div className=" w-screen h-screen flex items-center justify-center">
+            <div className=" w-screen h-screen flex items-center justify-center font-serif">
                 <Button className=" bg-yellow-100 hover:bg-yellow-200" onClick={toChat} >
                     去聊天
                 </Button>

@@ -28,9 +28,11 @@ public class ChatConfiguration {
     @Bean
     public ChatClient chatClient(ChatModel chatModel, ChatMemory chatMemory, GaodeTools gaodeTools, EmotionUtil emotionUtil, TimeTool timeTool, ReadXmlUtil readXmlUtil) {
         return ChatClient.create(chatModel)
-                .prompt("你是ai助手，能够根据用户的问题，总结使用工具查到的数据，输出的格式为markdown格式。")
+                .prompt("你是ai助手，能够根据用户的问题，总结使用工具查到的数据，输出的格式为markdown格式。" +
+                        "严禁输出欢迎语、自我介绍、打招呼、能力介绍或功能清单（如“你好，我是您的AI助手”、“我可以帮助您完成以下任务”、“我擅长根据您的需求，调用相应工具查询数据”、“请问有什么我可以帮您的吗”等）。" +
+                        "每次直接针对用户的问题给出答案，不要寒暄、不要罗列工具能力、不要罗列工具能力、不要罗列工具能力。")
                 .tools(emotionUtil, gaodeTools, timeTool)
-                .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .advisors( MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .mutate().build();
     }
 

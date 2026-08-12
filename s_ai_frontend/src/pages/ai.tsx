@@ -1,13 +1,22 @@
-import MessageBoard from "../components/chat/MessageBorad";
-import MessageInput from "../components/chat/MessageInput";
+
 import { useLoad } from "../hooks/useLoad";
 import { AssistantTypeValue, MessageTypeValue, type Message, type MessageSend } from "../types/Message";
 import { sendMessage } from "../utils/ai";
 import { useMessage } from "../hooks/useMessage";
+import { useAmount } from "../store/useAmount";
+import SideMain from "../components/side/SideMain";
+import MessageMain from "../components/chat/MessageMain";
+import { useEffect } from "react";
 
 export function Ai() {
     const { start, end, loading } = useLoad()
+    const { getAmount, amount, max } = useAmount()
     const { messages, add, updateLastMessage } = useMessage()
+
+
+    useEffect(() => {
+        getAmount()
+    }, [messages])
 
     async function sendChat(msg: string) {
         start()
@@ -32,7 +41,7 @@ export function Ai() {
 
         let str = ""
         for await (const chunk of sendMessage(obj)) {
-            str+=chunk
+            str += chunk
             updateLastMessage(str)
         }
 
@@ -45,10 +54,8 @@ export function Ai() {
         <>
 
             <div className="w-full flex justify-center">
-                <div className="w-full max-w-225">
-                    <MessageBoard messages={messages} />
-                    <MessageInput onSend={sendChat} loading={loading} />
-                </div>
+                <SideMain />
+                <MessageMain messages={messages} onSend={sendChat} loading={loading} amount={{ amount, max }} />
             </div>
 
         </>

@@ -1,4 +1,7 @@
 import type { MessageSend } from "../types/Message";
+import { getDeviceId } from "./ID";
+
+
 
 async function* sendMessage(messageSend: MessageSend) {
 
@@ -6,6 +9,7 @@ async function* sendMessage(messageSend: MessageSend) {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
+            "deviceId": getDeviceId()
         },
     })
 

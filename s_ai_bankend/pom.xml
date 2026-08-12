@@ -28,7 +28,6 @@
     </scm>
     <properties>
         <java.version>17</java.version>
-        <spring.boot.version>3.3.4</spring.boot.version>
         <spring-ai.version>2.0.0</spring-ai.version>
     </properties>
     <dependencies>
@@ -89,7 +88,18 @@
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
 
+        <!-- 序列化JSON支持 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
+        <!-- Knife4j OpenAPI3  Starter（Spring Boot 3 + Jakarta 规范） -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.4.0</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

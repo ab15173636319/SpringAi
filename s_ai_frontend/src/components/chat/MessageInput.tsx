@@ -26,13 +26,13 @@ export default function MessageInput(messageInput: IMessageInput) {
     return (
         <>
 
-            <div className=" bg-gray-200 p-2 flex items-center gap-5 rounded-md">
+            <div className=" bg-gray-200 p-2 flex items-end gap-5 rounded-md">
                 <textarea placeholder="畅所欲言......" value={msg} onChange={(e) => setMsg(e.target.value)} className=" outline-0 p-2 bg-transparent w-full resize-none max-h-40 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden"></textarea>
-                <Spain loading={messageInput.loading} className=" rounded-md overflow-hidden">
-                    <Button className=" flex items-center gap-2 w-fit min-w-20" disabled={msg.trim() === ""} onClick={clickHandler} onKeyDown={onKeyDown}>
-                        <IconSend icon="Send" />发送
+                {/* <Spain loading={messageInput.loading} className=" rounded-md overflow-hidden"> */}
+                    <Button className=" flex items-center gap-2 w-fit rounded-full" disabled={msg.trim() === ""} onClick={clickHandler} onKeyDown={onKeyDown}>
+                        {messageInput.loading ? <IconSend className=" text-red-600" icon="Loading"></IconSend> : <IconSend  className=" text-blue-600" icon="Send" ></IconSend>}
                     </Button>
-                </Spain>
+                {/* </Spain> */}
             </div>
 
 
