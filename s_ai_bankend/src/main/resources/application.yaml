@@ -5,7 +5,7 @@ spring:
     deepseek:
       chat:
         model: deepseek-v4-flash
-        api-key: sk-f1a8bf713fd44d00992168ab95990a2a
+        api-key: sk-***
         base-url: https://api.deepseek.com
         temperature: 0.7
   mongodb:
