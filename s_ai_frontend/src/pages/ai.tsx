@@ -11,20 +11,23 @@ import { useEffect } from "react";
 export function Ai() {
     const { start, end, loading } = useLoad()
     const { getAmount, amount, max } = useAmount()
-    const { messages, add, updateLastMessage } = useMessage()
+    const { messages, getMessages, add, updateLastMessage } = useMessage()
 
 
     useEffect(() => {
         getAmount()
     }, [messages])
 
+    useEffect(() => {
+        getMessages("2")
+    }, [])
+
     async function sendChat(msg: string) {
         start()
 
         add({
-            assistant: AssistantTypeValue.User,
-            type: MessageTypeValue.Text,
-            message: msg,
+            messageType: AssistantTypeValue.User,
+            text: msg,
         })
 
         const obj: MessageSend = {
@@ -33,20 +36,16 @@ export function Ai() {
         }
 
         add({
-            assistant: AssistantTypeValue.Assistant,
-            type: MessageTypeValue.Text,
-            message: "",
+            messageType: AssistantTypeValue.Assistant,
+            text: "工作中......",
         })
-
 
         let str = ""
         for await (const chunk of sendMessage(obj)) {
             str += chunk
             updateLastMessage(str)
         }
-
         end()
-
     }
 
 

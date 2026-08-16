@@ -1,12 +1,10 @@
-import type { Message } from "../../types/Message";
+import type { Amount, Message } from "../../types/Message";
 import Button from "../base/Button";
 import MessageBoard from "./MessageBorad";
+import MessageCharge from "./MessageCharge";
 import MessageInput from "./MessageInput";
 
-interface Amount {
-    amount: number;
-    max: number
-}
+
 
 
 interface IMessageMain {
@@ -32,14 +30,9 @@ export default function MessageMain({ messages, onSend, loading, amount }: IMess
                         <div className="">
                             <MessageInput onSend={onSend} loading={loading} />
                         </div>
-                        <div className=" py-1 text-sm flex gap-4">
-                            <div>
-                                <span>剩余次数：</span>
-                                <span className=" text-amber-800">{amount.max - amount.amount}</span>
-                            </div>
-                            <Button className=" py-0 text-sm bg-blue-300! text-white hover:bg-blue-600!">次数不足，购买次数</Button>
-                        </div>
                     </div>
+
+                    <MessageCharge amount={amount} />
                 </div>
             </div>
 

@@ -23,6 +23,4 @@ public class Chat {
 
     private LocalDateTime timestamp;
 
-    private String _class;
-
 }

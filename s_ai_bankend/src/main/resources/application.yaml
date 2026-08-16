@@ -14,12 +14,16 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: redis123
+      password: 123456
       database: 0
 server:
   port: 9999
 
 config:
+  limit:
+    device_call_count_prefix: "device:call_count:"
+    call_count_expire_day: 1
+    max_call_count: 5
   gaode:
     apikey: 86737a81711e70cf567f140423138d5a
     amap_ip_url: https://restapi.amap.com/v3/ip # 获取ip定位
@@ -30,6 +34,8 @@ config:
     amap_road: https://restapi.amap.com/v3/traffic/status/road # 获取道路交通状态 未使用
     amap_bus: https://restapi.amap.com/v3/bus/stopid # 获取公交站点信息 未使用
     amap_etd_driving: https://restapi.amap.com/v4/etd/driving # 高级路线规划 未使用
+
+
 
 
 
