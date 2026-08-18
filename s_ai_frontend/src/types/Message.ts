@@ -63,3 +63,10 @@ interface IAmount {
 
 export type Amount = IAmount
 
+interface ICharge {
+    id: number;
+    charge: number;
+    price: number;
+}
+
+export type Charge = ICharge

@@ -3,6 +3,7 @@ import Button from "../base/Button";
 import { useEffect, useState } from "react";
 import IconSend from "../../icons/Icon";
 import { useAmount } from "../../store/useAmount";
+import type { Charge } from "../../types/Message";
 
 
 export default function MessageCharge() {
@@ -40,7 +41,7 @@ export default function MessageCharge() {
     )
 }
 function ChargeModal() {
-    const [charges, setCharges] = useState<any[]>([])
+    const [charges, setCharges] = useState<Charge[]>([])
 
     const getCharge = async () => {
         const res = await axios.get("/api/charge/getCharges", {})

@@ -10,7 +10,7 @@ export default [
         price: 2
     },
     {
-        id: 3,
+        id: 3, 
         charge: 50,
         price: 5
     },

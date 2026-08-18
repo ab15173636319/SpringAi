@@ -4,7 +4,7 @@
 
 ## 一、严重逻辑 Bug（高优先级，必须修复）
 
-### 1.1 无限请求次数接口
+### 1.1 无限请求次数接口 
 - 文件：`src/pages/ai.tsx:16-18`
 - 问题：`useEffect(getAmount, [messages])` 依赖 `messages`，每次流式输出 `updateLastMessage` 都会触发 `getAmount`，造成无限请求。
 - 方案：改为仅在组件挂载时请求一次（`[]`），或在每次对话结束（`end()`）后调用。
