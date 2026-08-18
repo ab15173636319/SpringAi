@@ -8,14 +8,12 @@ import { useEffect } from "react";
 export function Ai() {
 
     const getAmount = useAmount((s) => s.getAmount)
-
-    const messages = useMessage((s) => s.messages)
     const getMessages = useMessage((s) => s.getMessages)
 
 
     useEffect(() => {
         getAmount()
-    }, [messages])
+    }, [])
 
     useEffect(() => {
         getMessages("2")

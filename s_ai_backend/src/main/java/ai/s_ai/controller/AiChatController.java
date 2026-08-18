@@ -57,7 +57,7 @@ public class AiChatController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功，返回历史消息列表")
     })
-    public ResultUtil<List<Message>> currentHistory(
+    public ResultUtil<List<Chat>> currentHistory(
             @Parameter(description = "会话 ID", required = true, example = "session-123456") @PathVariable String id
     ) {
         return aiChatService.getChats(id);

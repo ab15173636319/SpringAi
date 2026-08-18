@@ -8,8 +8,8 @@ export default function MessageBoard() {
             <div className={" p-4 rounded-md dark:bg-gray-950"}>
 
                 {
-                    messages.map((item, index) => (
-                        <MessageBubble key={index} {...item} />
+                    messages.map((item) => (
+                        <MessageBubble key={item.id} {...item} />
                     ))
                 }
             </div>

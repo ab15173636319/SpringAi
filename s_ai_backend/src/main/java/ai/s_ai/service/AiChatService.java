@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -54,11 +55,17 @@ public class AiChatService {
                 .content();
     }
 
-    public ResultUtil<List<Message>> getChats(String conversationId) {
+    public ResultUtil<List<Chat>> getChats(String conversationId) {
         if (conversationId == null) {
             throw new IllegalArgumentException("会话 ID不能为空");
         }
-        return ResultUtil.success(chatMemory.get(conversationId));
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("conversationId").is(conversationId))
+                .with(Sort.by(Sort.Direction.ASC, "timestamp"));
+
+        List<Chat> chats = mongoTemplate.find(query, Chat.class);
+        return ResultUtil.success(chats);
     }
 
 }

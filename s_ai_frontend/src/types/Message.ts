@@ -16,28 +16,38 @@ export const MessageTypeValue = {
 
 export type MessageType = typeof MessageTypeValue[keyof typeof MessageTypeValue]
 
-/*
-    private String id;
 
-    private String conversationId;
-
-    private Message message;
-
-    private LocalDateTime timestamp;
-*/
 /**
- *     private String content;
-    private String sender;
-    private String receiver;
-    private MessageType messageType;
+{
+    "id": "6a844b2db3e8080a37dfe1c0",
+    "conversationId": "2",
+    "message": {
+        "content": "hi",
+        "type": "USER"
+    },
+    "timestamp": "2026-08-18T20:08:13.277"
+}
  */
+
+
+
+
 interface IMessage {
-    text: string
-    messageType: AssistantType
+    content: string
+    type: AssistantType
 }
 
 export type Message = IMessage
 
+
+interface IMessageData {
+    id: string
+    conversationId: string
+    message: IMessage
+    timestamp: string
+}
+
+export type MessageData = IMessageData
 
 interface IMessageSend {
     id: string

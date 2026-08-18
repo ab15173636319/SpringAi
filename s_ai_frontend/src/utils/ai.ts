@@ -16,6 +16,10 @@ async function* sendMessage(messageSend: MessageSend) {
         throw new Error(`请求失败: ${aiRequest.status} ${aiRequest.statusText}`)
     }
 
+    if (aiRequest.body === null) {
+        throw new Error("请求体为空")
+    }
+
     const reader = aiRequest.body.getReader()
 
     if (!reader) return;

@@ -14,23 +14,28 @@ export default function MessageInput() {
     const loading = useLoad((s) => s.loading)
     const add = useMessage((s) => s.add)
     const updateLastMessage = useMessage((s) => s.updateLastMessage)
+    const conversationId = useMessage((s) => s.conversationId)
 
     const clickHandler = async () => {
         start()
 
         add({
-            messageType: AssistantTypeValue.User,
-            text: msg,
+            id: crypto.randomUUID(),
+            conversationId,
+            message: { content: msg, type: AssistantTypeValue.User },
+            timestamp: new Date().toISOString(),
         })
 
         const obj: MessageSend = {
-            id: "2",
+            id: conversationId,
             message: msg
         }
 
         add({
-            messageType: AssistantTypeValue.Assistant,
-            text: "工作中......",
+            id: crypto.randomUUID(),
+            conversationId,
+            message: { content: "工作中......", type: AssistantTypeValue.Assistant },
+            timestamp: new Date().toISOString(),
         })
 
         let str = ""
