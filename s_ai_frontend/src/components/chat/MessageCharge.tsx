@@ -1,14 +1,14 @@
 import axios from "axios";
-import type { Amount } from "../../types/Message";
-import { get } from "../../utils/request";
 import Button from "../base/Button";
 import { useEffect, useState } from "react";
 import IconSend from "../../icons/Icon";
+import { useAmount } from "../../store/useAmount";
 
 
-export default function MessageCharge({ amount }: { amount: Amount }) {
-
+export default function MessageCharge() {
     const [close, setClose] = useState(false)
+    const amount = useAmount((s) => s.amount)
+    const max = useAmount((s) => s.max)
 
     return (
         <>
@@ -16,7 +16,7 @@ export default function MessageCharge({ amount }: { amount: Amount }) {
                 <div className=" py-1 text-sm flex gap-4">
                     <div>
                         <span>剩余次数：</span>
-                        <span className=" text-amber-800">{amount.max - amount.amount}</span>
+                        <span className=" text-amber-800">{max - amount}</span>
                     </div>
                     <Button className=" py-0 text-sm bg-blue-300! text-white hover:bg-blue-600!" onClick={() => setClose(true)}>次数不足，购买次数</Button>
                 </div>
@@ -26,12 +26,12 @@ export default function MessageCharge({ amount }: { amount: Amount }) {
             {
                 close ?
                     <div className=" absolute inset-0 flex flex-col items-center justify-center">
-                        <div className=" w-screen h-screen bg-[rgba(0,0,0,0.5)] fixed inset-0 z-10" onClick={()=>setClose(false)}></div>
+                        <div className=" w-screen h-screen bg-[rgba(0,0,0,0.5)] fixed inset-0 z-10" onClick={() => setClose(false)}></div>
                         <div className=" w-100 bg-white rounded-md p-4 relative z-11">
                             <ChargeModal />
                         </div>
                         <div className=" relative z-11" onClick={() => setClose(false)}>
-                            <IconSend className="text-green-500 text-5xl! cursor-pointer mt-2" icon="Qingkong24"  />
+                            <IconSend className="text-green-500 text-5xl! cursor-pointer mt-2" icon="Qingkong24" />
                         </div>
                     </div> : ""
             }
@@ -40,16 +40,10 @@ export default function MessageCharge({ amount }: { amount: Amount }) {
     )
 }
 function ChargeModal() {
-console.log(1);
-
     const [charges, setCharges] = useState<any[]>([])
 
     const getCharge = async () => {
-        console.log("==============");
-        
         const res = await axios.get("/api/charge/getCharges", {})
-        console.log(res.data.data);
-        
         setCharges(res.data.data)
     }
 

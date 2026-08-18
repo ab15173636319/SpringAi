@@ -16,7 +16,7 @@ const Spain = (props: Props) => {
         <>
             <div className={" w-auto relative " + className}>
                 {loading ? <div className=" select-none absolute top-0 left-0 w-full h-full bg-black/20 flex items-center justify-center text-2xl text-gray00 z-10">
-                    <IconSend className=" text-blue-500 font-bold animate-spin" icon="Loading" />
+                    <IconSend className=" text-blue-500 font-bold animate-spin text-5xl!" icon="Loading" />
                 </div> : ""}
                 {children}
             </div>

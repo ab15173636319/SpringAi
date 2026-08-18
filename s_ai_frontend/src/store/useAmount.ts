@@ -1,19 +1,19 @@
-import { useState } from "react";
+import { create } from "zustand";
 import { get } from "../utils/request";
 import type { Response } from "../types/Request";
 import type { Amount } from "../types/Message";
 
-export const useAmount = () => {
-    const [amount, setAmount] = useState(0);
-    const [max, setMax] = useState(0);
-
-    const getAmount = async () => {
-        const res = await get<Response<Amount>>("/ai/getCurrentDeviceAmount", {})
-        setAmount(res.data.amount)
-        setMax(res.data.max)
-    }
-
-
-
-    return { amount, max, getAmount }
+interface AmountState {
+    amount: number;
+    max: number;
+    getAmount: () => Promise<void>;
 }
+
+export const useAmount = create<AmountState>((set) => ({
+    amount: 0,
+    max: 0,
+    getAmount: async () => {
+        const res = await get<Response<Amount>>("/ai/getCurrentDeviceAmount", {})
+        set({ amount: res.data.amount, max: res.data.max })
+    },
+}))

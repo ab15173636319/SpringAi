@@ -1,30 +1,24 @@
-import { useState } from "react";
+import { create } from "zustand";
 
-export function useLoad(initValue: boolean = false) {
-    const [loading, setLoading] = useState(initValue)
+interface LoadState {
+    loading: boolean;
+    timer: ReturnType<typeof setTimeout> | null;
+    start: () => void;
+    end: (duration?: number) => void;
+}
 
-    function start() {
-        setLoading(true)
-    }
-
-    /**
-     * 
-     * @param delay 持续时间
-     */
-    function end(duration: number = 100) {
-        let timer: number | null = null
+export const useLoad = create<LoadState>((set, get) => ({
+    loading: false,
+    timer: null,
+    start: () => set({ loading: true }),
+    end: (duration = 100) => {
+        const { timer } = get()
         if (timer)
             clearTimeout(timer)
 
-        timer = setTimeout(() => {
-            setLoading(false)
+        const newTimer = setTimeout(() => {
+            set({ loading: false, timer: null })
         }, duration)
-    }
-
-    return {
-        loading,
-        start,
-        end
-    }
-
-}
+        set({ timer: newTimer })
+    },
+}))
