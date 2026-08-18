@@ -8,9 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "config.limit")
 public class DeviceCallCountProperties {
-
     private String deviceCallCountPrefix;
     private Integer CallCountExpireDay;
     private Integer maxCallCount;
-
 }

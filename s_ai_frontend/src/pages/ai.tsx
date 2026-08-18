@@ -1,8 +1,8 @@
 
-import { useLoad } from "../hooks/useLoad";
+import { useLoad } from "../store/useLoad";
 import { AssistantTypeValue, MessageTypeValue, type Message, type MessageSend } from "../types/Message";
 import { sendMessage } from "../utils/ai";
-import { useMessage } from "../hooks/useMessage";
+import { useMessage } from "../store/useMessage";
 import { useAmount } from "../store/useAmount";
 import SideMain from "../components/side/SideMain";
 import MessageMain from "../components/chat/MessageMain";
@@ -41,11 +41,16 @@ export function Ai() {
         })
 
         let str = ""
-        for await (const chunk of sendMessage(obj)) {
-            str += chunk
-            updateLastMessage(str)
+        try {
+            for await (const chunk of sendMessage(obj)) {
+                str += chunk
+                updateLastMessage(str)
+            }
+        } catch (error) {
+            updateLastMessage(error instanceof Error ? error.message : "未知错误")
+        } finally {
+            end()
         }
-        end()
     }
 
 

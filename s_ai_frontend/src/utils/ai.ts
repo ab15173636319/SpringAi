@@ -4,7 +4,6 @@ import { getDeviceId } from "./ID";
 
 
 async function* sendMessage(messageSend: MessageSend) {
-
     const aiRequest = await fetch(`http://localhost:9999/ai/chat/${messageSend.id}?message=${messageSend.message}`, {
         method: "GET",
         headers: {

@@ -26,7 +26,7 @@ config:
   limit:
     device_call_count_prefix: "device:call_count:"
     call_count_expire_day: 1
-    max_call_count: 5
+    max_call_count: 100
   gaode:
     apikey: ${GAODE_API_KEY}
     amap_ip_url: https://restapi.amap.com/v3/ip # 获取ip定位
