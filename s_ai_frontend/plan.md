@@ -4,34 +4,34 @@
 
 ## 一、严重逻辑 Bug（高优先级，必须修复）
 
-### 1.1 无限请求次数接口 
-- 文件：`src/pages/ai.tsx:16-18`
+### 1.1 无限请求次数接口  √
+- 文件：`src/pages/ai.tsx:16-18` 
 - 问题：`useEffect(getAmount, [messages])` 依赖 `messages`，每次流式输出 `updateLastMessage` 都会触发 `getAmount`，造成无限请求。
 - 方案：改为仅在组件挂载时请求一次（`[]`），或在每次对话结束（`end()`）后调用。
 
-### 1.2 conversationId 写死
+### 1.2 conversationId 写死 ——
 - 文件：`src/components/chat/MessageInput.tsx:27`、`src/pages/ai.tsx:21`
 - 问题：`id: "2"`、`getMessages("2")` 写死字符串，无法支持多会话。
 - 方案：抽成统一的会话 ID 来源（store / 路由参数 / 常量），两处共用。
 
-### 1.3 列表使用 index 作 key
+### 1.3 列表使用 index 作 key √
 - 文件：`src/components/chat/MessageBorad.tsx:12`
 - 问题：`key={index}`，流式更新消息时会导致重渲染异常、输入框/状态错乱。
 - 方案：为 `Message` 增加唯一 `id` 字段，使用 `key={item.id}`。
 
 ## 二、代码质量
 
-### 2.1 删除调试代码
+### 2.1 删除调试代码 √
 - 文件：`src/store/useMessage.ts:25`
 - 问题：`console.log(res)` 残留。
 - 方案：删除。
 
-### 2.2 消除 any 类型
+### 2.2 消除 any 类型 √
 - 文件：`src/components/chat/MessageCharge.tsx:43`
 - 问题：`useState<any[]>([])`。
 - 方案：定义 `Charge` 类型并替换。
 
-### 2.3 统一请求层与设备标识
+### 2.3 统一请求层与设备标识 
 - 文件：`src/utils/request.ts`、`src/utils/ai.ts`
 - 问题：axios 与 fetch 两套实现各自注入 `deviceId`、且流式请求 `localhost:9999` 硬编码。
 - 方案：流式请求 baseURL 也走 `VITE_API_BASE_URL` 环境变量；统一设备标识注入逻辑（抽公共函数）。
