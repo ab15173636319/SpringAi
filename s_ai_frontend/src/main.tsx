@@ -6,11 +6,11 @@ import { RouterProvider } from 'react-router'
 import router from './router/index.ts'
 import "./utils/default.ts"
 import Spain from './components/base/Spain.tsx'
-import { useLoad } from './store/useLoad.ts'
+import { useGlobalLoad } from './store/useGlobalLoad.ts'
 
 
 function App() {
-    const loading = useLoad((s) => s.loading)
+    const loading = useGlobalLoad((s) => s.loading)
     return (
         <Spain loading={loading}>
             <RouterProvider router={router} />

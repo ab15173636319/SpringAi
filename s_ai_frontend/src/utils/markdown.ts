@@ -122,7 +122,7 @@ class MyRenderer extends Renderer {
         const align = flags.align ? ` style="text-align:${flags.align}"` : "";
         const cellCls = flags.header
             ? "px-3 py-2 font-semibold text-gray-900 dark:text-gray-100"
-            : "px-3 py-2 text-gray-700 dark:text-gray-200";
+            : "px-3 py-2 text-gray-700 dark:text-gray-200 text-center";
         const tag = flags.header ? "th" : "td";
         return `<${tag} class="${cellCls}"${align}>${content}</${tag}>`;
     }
