@@ -5,6 +5,7 @@ import { useLoad } from "../../store/useLoad";
 import { useMessage } from "../../store/useMessage";
 import { AssistantTypeValue, type MessageSend } from "../../types/Message";
 import { sendMessage } from "../../utils/ai";
+import { useConversation } from "../../store/useConversation";
 
 
 export default function MessageInput() {
@@ -14,26 +15,27 @@ export default function MessageInput() {
     const loading = useLoad((s) => s.loading)
     const add = useMessage((s) => s.add)
     const updateLastMessage = useMessage((s) => s.updateLastMessage)
-    const conversationId = useMessage((s) => s.conversationId)
+    const currentConversation = useConversation((s) => s.conversation)
+    const getConversation = useConversation((s) => s.getConversations)
 
     const clickHandler = async () => {
         start()
 
         add({
             id: crypto.randomUUID(),
-            conversationId,
+            conversationId: currentConversation.id,
             message: { content: msg, type: AssistantTypeValue.User },
             timestamp: new Date().toISOString(),
         })
 
         const obj: MessageSend = {
-            id: conversationId,
+            id: currentConversation.id,
             message: msg
         }
 
         add({
             id: crypto.randomUUID(),
-            conversationId,
+            conversationId: currentConversation.id,
             message: { content: "工作中......", type: AssistantTypeValue.Assistant },
             timestamp: new Date().toISOString(),
         })
@@ -47,6 +49,7 @@ export default function MessageInput() {
         } catch (error) {
             updateLastMessage(error instanceof Error ? error.message : "未知错误")
         } finally {
+            getConversation()
             end()
         }
         setMsg("")

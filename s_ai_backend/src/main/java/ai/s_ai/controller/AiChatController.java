@@ -48,6 +48,7 @@ public class AiChatController {
             @Parameter(description = "用户发送的消息内容", required = true, example = "你好，请介绍一下自己") @RequestParam String message,
             HttpServletRequest request) {
 
+        aiChatAboutService.getTitle(message, id);
         return aiChatService.chat(id, message, request);
 
     }
@@ -60,7 +61,7 @@ public class AiChatController {
     public ResultUtil<List<Chat>> currentHistory(
             @Parameter(description = "会话 ID", required = true, example = "session-123456") @PathVariable String id
     ) {
-        return aiChatService.getChats(id);
+        return ResultUtil.success(aiChatService.getChats(id));
     }
 
     @GetMapping("/getCurrentDeviceAmount")
@@ -70,7 +71,7 @@ public class AiChatController {
     })
     public ResultUtil<Map<String, Object>> getCurrentDeviceAmount(
             @Parameter(description = "HTTP 请求（需在请求头中携带 deviceId）", required = true) HttpServletRequest request) {
-        return aiChatAboutService.getCurrentDeviceAmount(request);
+        return ResultUtil.success(aiChatAboutService.getCurrentDeviceAmount(request));
     }
 
 }

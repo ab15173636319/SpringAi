@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import type { MessageData } from "../types/Message";
-import { get } from "../utils/request";
-import type { Response } from "../types/Request";
+import { getHistories } from "../api/ChatApi";
 
 interface MessageState {
-    conversationId: string;
+    id: string;
     messages: MessageData[];
     add: (message: MessageData) => void;
     updateLastMessage: (text: string) => void;
@@ -12,8 +11,10 @@ interface MessageState {
 }
 
 export const useMessage = create<MessageState>((set) => ({
-    conversationId: "2",
+    id: "2",
     messages: [],
+
+    // 添加消息到本地数组
     add: (message) => set((state) => ({ messages: [...state.messages, message] })),
 
     updateLastMessage: (content: string) => set((state) => {
@@ -24,9 +25,10 @@ export const useMessage = create<MessageState>((set) => ({
         return { messages: copy }
     }),
 
-
-    getMessages: async (conversationId) => {
-        const res = await get<Response<MessageData[]>>(`/ai/currentHistory/${conversationId}`, {})
-        set({ conversationId, messages: res.data ?? [] })
+    // 获取历史消息
+    getMessages: async (id: string) => {
+        console.log(id)
+        const data = await getHistories(id)
+        set({ id, messages: data ?? [] })
     },
 }))

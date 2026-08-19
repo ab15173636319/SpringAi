@@ -55,7 +55,7 @@ public class AiChatService {
                 .content();
     }
 
-    public ResultUtil<List<Chat>> getChats(String conversationId) {
+    public List<Chat> getChats(String conversationId) {
         if (conversationId == null) {
             throw new IllegalArgumentException("会话 ID不能为空");
         }
@@ -64,8 +64,7 @@ public class AiChatService {
         query.addCriteria(Criteria.where("conversationId").is(conversationId))
                 .with(Sort.by(Sort.Direction.ASC, "timestamp"));
 
-        List<Chat> chats = mongoTemplate.find(query, Chat.class);
-        return ResultUtil.success(chats);
+        return mongoTemplate.find(query, Chat.class);
     }
 
 }

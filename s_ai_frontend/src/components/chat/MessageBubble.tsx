@@ -13,7 +13,7 @@ export default function MessageBubble(props: MessageData) {
                     "flex justify-start"}>
                 <article className={
                     type === AssistantTypeValue.Assistant ?
-                        " w-auto max-w-[75%] bg-gray-200 py-2 px-3 rounded-md"
+                        " w-auto max-w-[90%] bg-gray-200 py-2 px-3 rounded-md"
                         :
                         "w-fit max-w-[75%]  py-2 px-3"}>
                     <div className="wrap-break-word" dangerouslySetInnerHTML={{ __html: markdown.parse(content) }}>

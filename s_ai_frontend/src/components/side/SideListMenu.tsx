@@ -1,30 +1,26 @@
 import { useState } from "react";
 import SideList from "./SideList"
+import { useConversation } from "../../store/useConversation";
 
 export default function SideListMenu() {
-
-    const msg: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    const [openId, setOpenId] = useState<number | null>(null)
-
-    const togglePopup = (id: number) => {
-        setOpenId((prev) => prev === id ? null : id)
-    }
+    const conversations = useConversation((s) => s.conversations)
+    const conversation = useConversation((s) => s.conversation)
 
     return (
         <>
             <div className=" flex flex-col gap-2 flex-1 scrollbar-hide">
                 {
-                    msg.map((item, index) => {
+                    conversations.map((item) => {
                         return <SideList
-                            key={index}
-                            id={`${item}`}
-                            title={`对话${item}`}
-                            onClick={() => { }}
-                            active={false}
-                            popupOpen={openId === item}
-                            onTogglePopup={() => togglePopup(item)}
+                            key={item.id}
+                            id={`${item.id}`}
+                            title={`${item.title}`}
+                            active={item.id === conversation.id}
                         />
                     })
+                }
+                {
+                    conversations.length === 0 && <div className="text-center text-gray-500">暂无对话</div>
                 }
             </div>
         </>
