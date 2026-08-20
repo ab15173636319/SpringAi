@@ -5,9 +5,10 @@ import { useConversation } from "../store/useConversation";
 import { useGlobalLoad } from "../store/useGlobalLoad";
 import SideMain from "../components/side/SideMain";
 import MessageMain from "../components/chat/MessageMain";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function Ai() {
+    const [isOpen, setOpen] = useState(true)
     const getConversations = useConversation((s) => s.getConversations)
     const currentConversation = useConversation((s) => s.conversation)
     const getAmount = useAmount((s) => s.getAmount)
@@ -15,7 +16,10 @@ export function Ai() {
     const startLoading = useGlobalLoad((s) => s.startLoading)
     const endLoading = useGlobalLoad((s) => s.endLoading)
     const initConversation = useConversation((s) => s.initConversation)
-    const conversations = useConversation((s) => s.conversations)
+
+    const togglOpenSide = () => {
+        setOpen((prev) => !prev)
+    }
 
     useEffect(() => {
         (async () => {
@@ -50,7 +54,7 @@ export function Ai() {
     return (
         <>
             <div className="w-full flex justify-center">
-                <SideMain />
+                <SideMain isOpen={isOpen} togglOpenSide={togglOpenSide} />
                 <MessageMain />
             </div>
         </>

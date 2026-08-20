@@ -10,6 +10,7 @@ interface ISideListMorePopup {
 export default function SideListMorePopup({ id, onUpdate }: ISideListMorePopup) {
     const getConversations = useConversation((s) => s.getConversations)
     const selConversation = useConversation((s) => s.selConversation)
+    
     // 置顶
     const topHandler = async (id: string) => {
         await topConversation(id)

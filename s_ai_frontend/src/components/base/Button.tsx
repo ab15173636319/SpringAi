@@ -6,6 +6,8 @@ type ButtonProps = {
     onClick?: () => void;
     disabled?: boolean;
     onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+    onMouseEnter?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 };
 
 function Button({ className = "", children, onClick, disabled, onKeyDown }: ButtonProps) {

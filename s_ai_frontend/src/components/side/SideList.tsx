@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import IconSend from "../../icons/Icon";
 import SideListMorePopup from "./SideListMorePopup";
 import { useConversation } from "../../store/useConversation";
-import { modifyConversation } from "../../api/ConversationApi";
+import { getConversation, modifyConversation } from "../../api/ConversationApi";
 
 
 interface ISideList {
@@ -23,6 +23,7 @@ export default function SideList({
     const [isUpdate, setIsUpdate] = useState(false)
     const [updateTitle, setUpdateTitle] = useState(title)
     const selConversation = useConversation((s) => s.selConversation)
+    const getConversations = useConversation((s) => s.getConversations)
     const [hovered, setHovered] = useState(false);
     const clickHandler = () => {
         selConversation(id)
@@ -31,13 +32,17 @@ export default function SideList({
     const handlerClickOutside = useCallback((e: MouseEvent) => {
         if (target.current && !target.current.contains(e.target as Node)) {
             setPopupOpen(false)
-            setIsUpdate(false)
         }
-        modifyConversation({ id, title: updateTitle })
     }, [])
 
     const toggleUpdate = () => {
         setIsUpdate((prev) => !prev)
+    }
+
+    const submitHandler = async () => {
+        await modifyConversation({ id, title: updateTitle })
+        await getConversations()
+        setIsUpdate(false)
     }
 
 
@@ -46,8 +51,8 @@ export default function SideList({
         window.addEventListener('mousedown', handlerClickOutside)
         window.addEventListener("touchstart", handlerClickOutside)
         return () => {
-            document.removeEventListener('mousedown', handlerClickOutside)
-            document.removeEventListener('touchstart', handlerClickOutside)
+            window.removeEventListener('mousedown', handlerClickOutside)
+            window.removeEventListener('touchstart', handlerClickOutside)
         }
     }, [popupOpen])
 
@@ -66,7 +71,7 @@ export default function SideList({
                         isUpdate
                             ?
                             <div>
-                                <input className=" border outline-0 border-amber-500 rounded-md" type="text" value={updateTitle} onChange={(e) => setUpdateTitle(e.target.value)} />
+                                <input autoFocus onBlur={submitHandler} className=" border outline-0 border-amber-500 rounded-md" type="text" value={updateTitle} onChange={(e) => setUpdateTitle(e.target.value)} />
                             </div>
                             :
                             <div className=" flex gap-1 items-center">
