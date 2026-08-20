@@ -6,7 +6,7 @@ export default function MessageBoard() {
     const messages = useMessage((s) => s.messages)
     return (
         <>
-            <div className={" h-full flex flex-col p-6 rounded-md dark:bg-gray-950"}>
+            <div className={" flex flex-col rounded-md dark:bg-gray-950 "}>
                 {
                     messages.map((item) => (
                         <MessageBubble key={item.id} {...item} />

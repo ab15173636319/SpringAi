@@ -15,6 +15,7 @@ export function Ai() {
     const startLoading = useGlobalLoad((s) => s.startLoading)
     const endLoading = useGlobalLoad((s) => s.endLoading)
     const initConversation = useConversation((s) => s.initConversation)
+    const conversations = useConversation((s) => s.conversations)
 
     useEffect(() => {
         (async () => {

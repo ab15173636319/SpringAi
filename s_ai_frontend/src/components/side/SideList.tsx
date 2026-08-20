@@ -2,21 +2,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import IconSend from "../../icons/Icon";
 import SideListMorePopup from "./SideListMorePopup";
 import { useConversation } from "../../store/useConversation";
+import { modifyConversation } from "../../api/ConversationApi";
 
 
 interface ISideList {
     title: string;
     id?: string;
     active: boolean;
+    isTop: boolean;
 }
 
 export default function SideList({
     title,
     id,
-    active = true
+    active = true,
+    isTop = false
 }: ISideList) {
     const target = useRef<HTMLDivElement>(null)
     const [popupOpen, setPopupOpen] = useState(false)
+    const [isUpdate, setIsUpdate] = useState(false)
+    const [updateTitle, setUpdateTitle] = useState(title)
     const selConversation = useConversation((s) => s.selConversation)
     const [hovered, setHovered] = useState(false);
     const clickHandler = () => {
@@ -26,8 +31,14 @@ export default function SideList({
     const handlerClickOutside = useCallback((e: MouseEvent) => {
         if (target.current && !target.current.contains(e.target as Node)) {
             setPopupOpen(false)
+            setIsUpdate(false)
         }
+        modifyConversation({ id, title: updateTitle })
     }, [])
+
+    const toggleUpdate = () => {
+        setIsUpdate((prev) => !prev)
+    }
 
 
     useEffect(() => {
@@ -50,11 +61,24 @@ export default function SideList({
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
             >
-                <div className="text-[14px]">{title}</div>
+                <div className="text-[14px]">
+                    {
+                        isUpdate
+                            ?
+                            <div>
+                                <input className=" border outline-0 border-amber-500 rounded-md" type="text" value={updateTitle} onChange={(e) => setUpdateTitle(e.target.value)} />
+                            </div>
+                            :
+                            <div className=" flex gap-1 items-center">
+                                <span>{title}</span>
+                                {isTop ? <IconSend className=" text-sm" icon="Zhiding" /> : ""}
+                            </div>
+                    }
+                </div>
                 <div className={`text-gray-400 ${hovered ? " opacity-100" : "opacity-0"}`} onClick={() => { setPopupOpen((prev) => !prev) }}>
                     <IconSend icon="Gengduo1" />
                 </div>
-                {popupOpen ? <SideListMorePopup id={id} /> : ""}
+                {popupOpen ? <SideListMorePopup id={id} onUpdate={toggleUpdate} /> : ""}
             </div >
 
         </>

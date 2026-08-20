@@ -13,7 +13,7 @@ interface ConversationState {
 
 const useConversation = create<ConversationState>((set) => ({
     conversations: [],
-    conversation: { id: "", title: "", createTime: "", updateTime: "" },
+    conversation: { id: "", title: "", createTime: "", updateTime: "", top: 0 },
     initConversation: async (): Promise<string> => {
         // 初始化
         // 从本地存储中获取会话ID
@@ -31,7 +31,7 @@ const useConversation = create<ConversationState>((set) => ({
     },
     selConversation: (id) => {
         localStorage.setItem("conversationId", id)
-        set((state) => ({ conversation: state.conversations.find(c => c.id === id) ?? { id: "", title: "", createTime: "", updateTime: "" } }))
+        set((state) => ({ conversation: state.conversations.find(c => c.id === id) ?? { id: "", title: "", createTime: "", updateTime: "", top: 0 } }))
     },
 }))
 

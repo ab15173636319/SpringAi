@@ -1,4 +1,3 @@
-import { useState } from "react";
 import SideList from "./SideList"
 import { useConversation } from "../../store/useConversation";
 
@@ -16,6 +15,7 @@ export default function SideListMenu() {
                             id={`${item.id}`}
                             title={`${item.title}`}
                             active={item.id === conversation.id}
+                            isTop={item.top === 1}
                         />
                     })
                 }
