@@ -7,6 +7,7 @@ interface AmountState {
     amount: number;
     max: number;
     getAmount: () => Promise<void>;
+    decrementAmount: () => void;
 }
 
 export const useAmount = create<AmountState>((set) => ({
@@ -16,4 +17,7 @@ export const useAmount = create<AmountState>((set) => ({
         const res = await get<Response<Amount>>("/ai/getCurrentDeviceAmount", {})
         set({ amount: res.data.amount, max: res.data.max })
     },
+    decrementAmount: () => {
+        set((state) => ({ amount: state.amount - 1 }))
+    }
 }))

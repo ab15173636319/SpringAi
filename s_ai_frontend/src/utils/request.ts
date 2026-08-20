@@ -33,4 +33,8 @@ const post = <T = any>(url: string, data: Record<string, any>): Promise<T> => {
     return request.post<any, any>(url, data) as Promise<T>
 }
 
-export { get, post }
+const deleteFn = <T = any>(url: string, data: Record<string, any>): Promise<T> => {
+    return request.delete<any, any>(url, { data }) as Promise<T>
+}
+
+export { get, post, deleteFn }
