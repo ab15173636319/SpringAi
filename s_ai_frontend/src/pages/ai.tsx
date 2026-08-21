@@ -6,9 +6,14 @@ import { useGlobalLoad } from "../store/useGlobalLoad";
 import SideMain from "../components/side/SideMain";
 import MessageMain from "../components/chat/MessageMain";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "../utils/useMediaQuery";
 
 export function Ai() {
-    const [isOpen, setOpen] = useState(true)
+    // 响应式侧边栏：大屏(≥1024px)默认展开，中屏(768~1023px)默认收起，小屏(<768px)使用定位抽屉
+    const isMobile = useMediaQuery("(max-width: 767px)")
+    const isLarge = useMediaQuery("(min-width: 1024px)")
+    const [isOpen, setIsOpen] = useState(() => !isMobile && isLarge)
+
     const getConversations = useConversation((s) => s.getConversations)
     const currentConversation = useConversation((s) => s.conversation)
     const getAmount = useAmount((s) => s.getAmount)
@@ -18,8 +23,18 @@ export function Ai() {
     const initConversation = useConversation((s) => s.initConversation)
 
     const togglOpenSide = () => {
-        setOpen((prev) => !prev)
+        setIsOpen((prev) => !prev)
     }
+
+    // 断点切换时，重置为当前断点的默认展开状态
+    useEffect(() => {
+        setIsOpen(!isMobile && isLarge)
+    }, [isMobile, isLarge])
+
+    // 移动端选择会话后收起抽屉
+    useEffect(() => {
+        if (isMobile) setIsOpen(false)
+    }, [currentConversation.id, isMobile])
 
     useEffect(() => {
         (async () => {
@@ -54,7 +69,7 @@ export function Ai() {
     return (
         <>
             <div className="w-full flex justify-center">
-                <SideMain isOpen={isOpen} togglOpenSide={togglOpenSide} />
+                <SideMain isOpen={isOpen} isMobile={isMobile} togglOpenSide={togglOpenSide} />
                 <MessageMain />
             </div>
         </>

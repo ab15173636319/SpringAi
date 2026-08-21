@@ -43,7 +43,7 @@ public class ChatConfiguration {
     @Bean
     public ChatClient setTitle(ChatModel chatModel) {
         return ChatClient.create(chatModel)
-                .prompt("根据用户聊天内容，总结一个标题")
+                .prompt("根据用户聊天内容，总结一个不超过8个字的标题")
                 .mutate()
                 .build();
     }
