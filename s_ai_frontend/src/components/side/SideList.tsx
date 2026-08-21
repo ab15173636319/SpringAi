@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import IconSend from "../../icons/Icon";
 import SideListMorePopup from "./SideListMorePopup";
 import { useConversation } from "../../store/useConversation";
-import { getConversation, modifyConversation } from "../../api/ConversationApi";
+import { modifyConversation } from "../../api/ConversationApi";
 
 
 interface ISideList {
     title: string;
-    id?: string;
+    id: string;
     active: boolean;
     isTop: boolean;
 }
@@ -26,10 +26,11 @@ export default function SideList({
     const getConversations = useConversation((s) => s.getConversations)
     const [hovered, setHovered] = useState(false);
     const clickHandler = () => {
+        if (!id) return
         selConversation(id)
     }
 
-    const handlerClickOutside = useCallback((e: MouseEvent) => {
+    const handlerClickOutside = useCallback((e: MouseEvent | TouchEvent) => {
         if (target.current && !target.current.contains(e.target as Node)) {
             setPopupOpen(false)
         }

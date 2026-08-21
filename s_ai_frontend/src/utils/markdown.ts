@@ -6,7 +6,7 @@ class MyRenderer extends Renderer {
      * 标题
      */
     override heading(text: string, level: number, _raw: string): string {
-        const size: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
+        const size: Record<number, string> = {
             1: "text-3xl",
             2: "text-2xl",
             3: "text-xl",
@@ -15,7 +15,7 @@ class MyRenderer extends Renderer {
             6: "text-sm",
         };
 
-        const baseCls = `mt-3 mb-2 font-bold text-gray-950 dark:text-gray-50 ${size[level]}`;
+        const baseCls = `mt-3 mb-2 font-bold text-gray-950 dark:text-gray-50 ${size[level] ?? "text-sm"}`;
         return `<h${level} class="${baseCls}">${text}</h${level}>`;
     }
 

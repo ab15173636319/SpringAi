@@ -4,7 +4,7 @@ import { cn } from "../../utils/cn";
 type ButtonType = "primary" | "danger" | "success" | "default"
 
 interface ButtonProps {
-    type: ButtonType;
+    type?: ButtonType;
     className?: string;
     children?: ReactNode;
     onClick?: () => void;
