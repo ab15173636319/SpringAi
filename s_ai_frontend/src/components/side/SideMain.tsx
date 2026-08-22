@@ -53,24 +53,22 @@ export default function SideMain({ isOpen, isMobile, togglOpenSide }: ISideMain)
     return (
         <>
             <div className={cn(
-                "h-screen flex flex-col gap-5 border-r border-gray-200 px-4 transition-all",
-                " duration-300 ease-in-out",
-                isOpen ?
-                    "w-62.5 opacity-100 translate-x-0"
-                    :
-                    "w-0 min-w-0 opacity-0 -translate-x-52 pointer-events-none"
+                "relative z-40 h-screen shrink-0  flex flex-col gap-5 border-r border-gray-200 bg-white px-4 transition-all",
+                "duration-300 ease-in-out",
+                isOpen
+                    ? "w-62.5 opacity-100 translate-x-0"
+                    : "w-0 min-w-0 opacity-0 -translate-x-62.5 pointer-events-none"
             )}>
                 <SideHeader togglOpenSide={togglOpenSide} />
                 <SideNewChat />
                 <SideListMenu />
             </div>
             <div className={cn(
-                "fixed top-0 left-0 transition-all duration-300",
-                isOpen ? " opacity-0 pointer-events-none" : " opacity-100"
+                "fixed top-0 left-0 z-50 transition-all duration-300",
+                isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
             )}>
                 <SideHiddenHider togglOpenSide={togglOpenSide} />
             </div>
-
         </>
     )
 }

@@ -18,7 +18,7 @@ function Button({ className = "", children, onClick, disabled, onKeyDown, type =
     return (
         <button disabled={disabled}
             className={cn(
-                "px-4 py-2 text-sm rounded-md font-medium cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1" + className,
+                " outline-0 px-4 py-2 text-sm rounded-md font-medium cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1" + className,
                 type === "primary" && "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500",
                 type === "default" && "bg-gray-50 text-gray-700 hover:bg-gray-100 active:bg-gray-300 focus:ring-gray-400",
                 type === "danger" && "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500",

@@ -5,7 +5,7 @@ import { useConversation } from "../store/useConversation";
 import { useGlobalLoad } from "../store/useGlobalLoad";
 import SideMain from "../components/side/SideMain";
 import MessageMain from "../components/chat/MessageMain";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "../utils/useMediaQuery";
 
 export function Ai() {
@@ -13,6 +13,7 @@ export function Ai() {
     const isMobile = useMediaQuery("(max-width: 767px)")
     const isLarge = useMediaQuery("(min-width: 1024px)")
     const [isOpen, setIsOpen] = useState(() => !isMobile && isLarge)
+    const userPrefRef = useRef(isOpen)
 
     const getConversations = useConversation((s) => s.getConversations)
     const currentConversation = useConversation((s) => s.conversation)
@@ -23,13 +24,23 @@ export function Ai() {
     const initConversation = useConversation((s) => s.initConversation)
 
     const togglOpenSide = () => {
-        setIsOpen((prev) => !prev)
+        setIsOpen((prev) => {
+            const next = !prev
+            if (!isMobile) {
+                userPrefRef.current = next
+            }
+            return next
+        })
     }
 
-    // 断点切换时，重置为当前断点的默认展开状态
+    // 进入移动端时强制收起；离开移动端或跨非移动端断点时恢复用户偏好，避免已折叠的侧边栏闪烁弹出
     useEffect(() => {
-        setIsOpen(!isMobile && isLarge)
-    }, [isMobile, isLarge])
+        if (isMobile) {
+            setIsOpen(false)
+        } else {
+            setIsOpen(userPrefRef.current)
+        }
+    }, [isMobile])
 
     // 移动端选择会话后收起抽屉
     useEffect(() => {
@@ -68,9 +79,11 @@ export function Ai() {
 
     return (
         <>
-            <div className="w-full flex justify-center">
+            <div className="flex w-full">
                 <SideMain isOpen={isOpen} isMobile={isMobile} togglOpenSide={togglOpenSide} />
-                <MessageMain />
+                <div className="flex-1 min-w-0">
+                    <MessageMain />
+                </div>
             </div>
         </>
     )

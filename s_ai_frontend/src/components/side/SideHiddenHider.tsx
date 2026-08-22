@@ -34,7 +34,7 @@ export default function SideHiddenHider({ togglOpenSide }: { togglOpenSide: () =
 
     return (
         <>
-            <div className="  flex items-center fixed top-2 left-2 bg-white z-2 shadow w-fit px-8  rounded-[999px]">
+            <div className="flex items-center fixed top-2 left-2 bg-white z-50 shadow w-fit px-8 rounded-[999px]">
                 <div className=" flex items-center gap-2">
                     <img className=" w-8" src="/logo.png" alt="刘某的聊天机器人" />
                 </div>
