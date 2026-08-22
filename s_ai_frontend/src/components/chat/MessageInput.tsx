@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import IconSend from "../../icons/Icon";
 import Button from "../base/Button";
 import { useLoad } from "../../store/useLoad";
@@ -58,10 +58,19 @@ export default function MessageInput() {
         setMsg("")
     }
 
+
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        e.preventDefault()
+        if (e.key === 'Enter') {
+            clickHandler()
+        }
+    }
+
     return (
         <>
             <div className=" bg-gray-200 p-2 flex items-end gap-5 rounded-md">
-                <textarea placeholder="畅所欲言......" value={msg} onChange={(e) => setMsg(e.target.value)} className=" outline-0 p-2 bg-transparent w-full resize-none max-h-40 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden"></textarea>
+                <textarea onKeyDown={handleKeyDown} placeholder="畅所欲言......" value={msg} onChange={(e) => setMsg(e.target.value)} className=" outline-0 p-2 bg-transparent w-full resize-none max-h-40 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden"></textarea>
                 <Button className=" flex items-center gap-2 w-fit rounded-full" disabled={msg.trim() === ""} onClick={clickHandler}>
                     {
                         loading ?
