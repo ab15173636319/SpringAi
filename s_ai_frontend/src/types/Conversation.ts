@@ -1,8 +1,9 @@
 interface IConversation {
-    id: string;
-    title: string;
-    createTime: string;
-    updateTime: string;
+  id: string;
+  title: string;
+  createTime: string;
+  updateTime: string;
+  top: number;
 }
 
-export type Conversation = IConversation
+export type Conversation = IConversation;

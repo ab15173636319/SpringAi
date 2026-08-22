@@ -6,7 +6,7 @@ import { useConversation } from "../../store/useConversation";
 
 interface ISideList {
     title: string;
-    id?: string;
+    id: string;
     active: boolean;
 }
 
@@ -23,7 +23,7 @@ export default function SideList({
         selConversation(id)
     }
 
-    const handlerClickOutside = useCallback((e: MouseEvent) => {
+    const handlerClickOutside = useCallback((e: MouseEvent | TouchEvent) => {
         if (target.current && !target.current.contains(e.target as Node)) {
             setPopupOpen(false)
         }
