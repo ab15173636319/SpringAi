@@ -61,8 +61,8 @@ export default function MessageInput() {
 
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        e.preventDefault()
         if (e.key === 'Enter') {
+            e.preventDefault()
             clickHandler()
         }
     }
