@@ -1,6 +1,6 @@
 import type { Conversation } from "../types/Conversation";
 import type { Response } from "../types/Request";
-import { get, post } from "../utils/request";
+import { deleteFn, get, post } from "../utils/request";
 const createConversation = async (): Promise<Conversation> => {
     const res = await post<Response<Conversation>>("/conversation/create", {})
     return res.data
@@ -21,5 +21,9 @@ const topConversation = async (id: string): Promise<Conversation> => {
     return res.data
 }
 
+const deleteConversation = async (id: string): Promise<void> => {
+    await deleteFn<Response<void>>(`/conversation/delete/${id}`, {})
+}
 
-export { createConversation, getConversation, modifyConversation, topConversation }
+
+export { createConversation, getConversation, modifyConversation, topConversation, deleteConversation }

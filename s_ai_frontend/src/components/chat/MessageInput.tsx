@@ -6,6 +6,7 @@ import { useMessage } from "../../store/useMessage";
 import { AssistantTypeValue, type MessageSend } from "../../types/Message";
 import { sendMessage } from "../../utils/ai";
 import { useConversation } from "../../store/useConversation";
+import { useAmount } from "../../store/useAmount";
 
 
 export default function MessageInput() {
@@ -17,6 +18,7 @@ export default function MessageInput() {
     const updateLastMessage = useMessage((s) => s.updateLastMessage)
     const currentConversation = useConversation((s) => s.conversation)
     const getConversation = useConversation((s) => s.getConversations)
+    const decreaseAmount = useAmount((s) => s.decrementAmount)
 
     const clickHandler = async () => {
         start()
@@ -46,6 +48,7 @@ export default function MessageInput() {
                 str += chunk
                 updateLastMessage(str)
             }
+            decreaseAmount()
         } catch (error) {
             updateLastMessage(error instanceof Error ? error.message : "未知错误")
         } finally {

@@ -12,7 +12,7 @@ spring:
         base-url: https://api.deepseek.com
         temperature: 0.7
   mongodb:
-    uri: mongodb://root:123456@localhost:27017/ai?authSource=admin
+    uri: mongodb://ai:wmnjpmjnwrarKy6w@112.124.13.194:27017/ai?authSource=ai
   data:
     redis:
       host: localhost

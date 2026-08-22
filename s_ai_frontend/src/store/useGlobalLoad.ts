@@ -14,5 +14,12 @@ export const useGlobalLoad = create<GlobalLoadState>((set) => ({
     loading: false,
     setLoading: (loading) => set({ loading }),
     startLoading: () => set({ loading: true }),
-    endLoading: () => set({ loading: false }),
+    endLoading: () => {
+        let timer = setTimeout(() => {
+            set({ loading: false })
+        }, 100)
+        return () => {
+            clearTimeout(timer)
+        }
+    },
 }));
