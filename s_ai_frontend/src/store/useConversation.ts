@@ -28,6 +28,7 @@ const useConversation = create<ConversationState>((set) => ({
     addConversation: async () => {
         const res = await createConversation()
         set((state) => ({ conversations: [...state.conversations, res] }))
+        return res
     },
     selConversation: (id) => {
         localStorage.setItem("conversationId", id)
