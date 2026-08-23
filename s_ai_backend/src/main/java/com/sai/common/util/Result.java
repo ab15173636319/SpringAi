@@ -1,4 +1,4 @@
-package com.sai.web.util;
+package com.sai.common.util;
 
 import lombok.Data;
 

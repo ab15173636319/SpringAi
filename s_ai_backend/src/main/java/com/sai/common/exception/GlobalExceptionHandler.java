@@ -1,7 +1,5 @@
-package com.sai.web.exception;
+package com.sai.common.exception;
 
-import com.sai.web.exception.BusinessException;
-import com.sai.web.util.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,6 +8,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.sai.common.exception.BusinessException;
+import com.sai.common.util.Result;
 
 import java.util.stream.Collectors;
 

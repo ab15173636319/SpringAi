@@ -1,4 +1,4 @@
-package com.sai.web.exception;
+package com.sai.common.exception;
 
 /**
  * 自定义业务异常
