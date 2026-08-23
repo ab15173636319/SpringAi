@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import IconSend from "../../icons/Icon";
 import Button from "../base/Button";
 import { useLoad } from "../../store/useLoad";

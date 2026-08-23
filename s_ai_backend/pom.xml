@@ -8,11 +8,11 @@
         <version>4.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>ai</groupId>
-    <artifactId>s_ai</artifactId>
+    <groupId>com.sai</groupId>
+    <artifactId>sai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>s_ai</name>
-    <description>s_ai</description>
+    <name>sai</name>
+    <description>sai backend</description>
     <url/>
     <licenses>
         <license/>
