@@ -1,9 +1,10 @@
 package com.sai.conversation.controller;
 
+import com.sai.common.util.Result;
 import com.sai.conversation.dto.ConversationDto;
 import com.sai.conversation.entity.Conversation;
 import com.sai.conversation.service.ConversationService;
-import com.sai.web.util.Result;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

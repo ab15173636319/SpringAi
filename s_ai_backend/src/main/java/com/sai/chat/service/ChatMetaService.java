@@ -1,8 +1,8 @@
 package com.sai.chat.service;
 
 import com.sai.device.config.DeviceCallLimitProperties;
+import com.sai.common.exception.BusinessException;
 import com.sai.conversation.entity.Conversation;
-import com.sai.web.exception.BusinessException;
 import com.sai.conversation.repository.ConversationRepository;
 import com.sai.redis.util.RedisClient;
 import jakarta.servlet.http.HttpServletRequest;

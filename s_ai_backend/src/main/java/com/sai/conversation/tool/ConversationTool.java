@@ -1,8 +1,9 @@
 package com.sai.conversation.tool;
 
+import com.sai.common.exception.BusinessException;
 import com.sai.conversation.entity.Conversation;
 import com.sai.conversation.repository.ConversationRepository;
-import com.sai.web.exception.BusinessException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;

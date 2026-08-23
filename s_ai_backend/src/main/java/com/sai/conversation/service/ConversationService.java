@@ -1,9 +1,10 @@
 package com.sai.conversation.service;
 
+import com.sai.common.exception.BusinessException;
 import com.sai.conversation.dto.ConversationDto;
 import com.sai.conversation.entity.Conversation;
 import com.sai.conversation.repository.ConversationRepository;
-import com.sai.web.exception.BusinessException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

@@ -3,7 +3,8 @@ package com.sai.chat.controller;
 import com.sai.chat.entity.Chat;
 import com.sai.chat.service.ChatMetaService;
 import com.sai.chat.service.ChatService;
-import com.sai.web.util.Result;
+import com.sai.common.util.Result;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
