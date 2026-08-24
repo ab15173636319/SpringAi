@@ -44,7 +44,8 @@ public class ChatService {
         }
 
         return chatClient
-                .prompt(message)
+                .prompt()
+                .user(message)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, id))
                 .stream()
                 .content();

@@ -1,6 +1,6 @@
 autoDeleteData: false
 autoDetectedPackages:
-- ai.s_ai
+- com.sai
 autoKeepDataNum: 10
 enableAutoDetect: true
 entryDisplayConfig:

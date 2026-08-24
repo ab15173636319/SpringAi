@@ -19,6 +19,7 @@ export default function MessageInput() {
     const currentConversation = useConversation((s) => s.conversation)
     const getConversation = useConversation((s) => s.getConversations)
     const decreaseAmount = useAmount((s) => s.decrementAmount)
+    const getAmount = useAmount((s) => s.getAmount)
 
     const clickHandler = async () => {
         start()
@@ -48,7 +49,7 @@ export default function MessageInput() {
                 str += chunk
                 updateLastMessage(str)
             }
-            decreaseAmount()
+            await getAmount()
         } catch (error) {
             updateLastMessage(error instanceof Error ? error.message : "未知错误")
         } finally {
