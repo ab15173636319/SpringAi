@@ -1,5 +1,6 @@
 package com.sai.chat.config;
 
+import com.sai.chat.advisor.ResponseAdvisor;
 import com.sai.chat.tool.AmapTools;
 import com.sai.chat.tool.EmotionAnalyzer;
 import com.sai.chat.tool.TimeTool;
@@ -38,7 +39,7 @@ public class ChatConfiguration {
                         +
                         "每次直接针对用户的问题给出答案，不要寒暄、不要罗列工具能力、不要罗列工具能力、不要罗列工具能力。")
                 .tools(emotionAnalyzer, amapTools, timeTool, conversationTool)
-                .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new ResponseAdvisor())
                 .mutate().build();
     }
 
