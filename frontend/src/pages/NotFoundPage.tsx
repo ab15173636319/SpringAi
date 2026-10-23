@@ -1,5 +1,6 @@
-import { ArrowLeft, ArrowRight } from "@phosphor-icons/react";
+import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { AppIcon } from "../components/AppIcon";
 import { BrandMark } from "../components/BrandMark";
 import { Button } from "../components/Button";
 import { useAuthStore } from "../stores/auth";
@@ -13,7 +14,7 @@ export function NotFoundPage() {
     <main
       data-route-focus
       tabIndex={-1}
-      className="grid min-h-dvh place-items-center bg-canvas px-6 text-ink outline-none"
+      className="not-found-page grid min-h-dvh place-items-center bg-canvas px-6 text-ink outline-none"
     >
       <section className="w-full max-w-2xl">
         <BrandMark size="lg" />
@@ -31,7 +32,7 @@ export function NotFoundPage() {
             variant="secondary"
             onClick={() => navigate(-1)}
           >
-            <ArrowLeft size={17} aria-hidden="true" />
+            <AppIcon icon={faArrowLeft} size={17} />
             返回上一页
           </Button>
           <Button
@@ -40,7 +41,7 @@ export function NotFoundPage() {
             }
           >
             {authenticated ? "回到工作台" : "返回登录"}
-            <ArrowRight size={17} aria-hidden="true" />
+            <AppIcon icon={faArrowRight} size={17} />
           </Button>
         </div>
       </section>

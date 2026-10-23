@@ -1,12 +1,13 @@
 import {
-  ArrowRight,
-  CheckCircle,
-  Moon,
-  ShieldCheck,
-  Sun,
-} from "@phosphor-icons/react";
+  faArrowRight,
+  faCircleCheck,
+  faMoon,
+  faShieldHalved,
+  faSun,
+} from "@fortawesome/free-solid-svg-icons";
 import type { FormEvent, ReactNode, RefObject } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AppIcon } from "../../components/AppIcon";
 import { BrandMark } from "../../components/BrandMark";
 import { Button } from "../../components/Button";
 import { IconButton } from "../../components/IconButton";
@@ -66,11 +67,11 @@ export function AuthLayout({
     <main
       data-route-focus
       tabIndex={-1}
-      className="min-h-dvh bg-canvas text-ink outline-none lg:grid lg:grid-cols-[minmax(0,1.08fr)_minmax(440px,0.92fr)]"
+      className="auth-shell min-h-dvh bg-canvas text-ink outline-none lg:grid lg:grid-cols-[minmax(0,1.08fr)_minmax(440px,0.92fr)]"
     >
       <HeroPreview />
 
-      <section className="relative flex min-h-dvh flex-col px-5 py-6 sm:px-8 lg:px-12 xl:px-20">
+      <section className="auth-form-shell relative flex min-h-dvh flex-col px-5 py-6 sm:px-8 lg:px-12 xl:px-20">
         <div className="flex items-center justify-between lg:justify-end">
           <div className="flex items-center gap-2.5 lg:hidden">
             <BrandMark size="sm" />
@@ -81,9 +82,9 @@ export function AuthLayout({
             onClick={toggleTheme}
           >
             {theme === "light" ? (
-              <Moon size={19} aria-hidden="true" />
+              <AppIcon icon={faMoon} size={19} />
             ) : (
-              <Sun size={19} aria-hidden="true" />
+              <AppIcon icon={faSun} size={19} />
             )}
           </IconButton>
         </div>
@@ -96,7 +97,7 @@ export function AuthLayout({
           <p className="mt-3 text-sm leading-6 text-muted">{copy.description}</p>
 
           <div
-            className="mt-8 grid grid-cols-2 rounded-lg bg-surface-muted p-1"
+            className="auth-tabs mt-8 grid grid-cols-2 rounded-lg bg-surface-muted p-1"
             role="tablist"
             aria-label="账号操作"
           >
@@ -138,7 +139,7 @@ export function AuthLayout({
               loading={submitting}
             >
               {copy.submit}
-              {!submitting && <ArrowRight size={18} aria-hidden="true" />}
+              {!submitting && <AppIcon icon={faArrowRight} size={18} />}
             </Button>
           </form>
 
@@ -153,7 +154,7 @@ export function AuthLayout({
 
 function HeroPreview() {
   return (
-    <section className="relative hidden min-h-dvh overflow-hidden border-r border-line bg-hero px-12 py-10 lg:flex lg:flex-col xl:px-20 xl:py-14">
+    <section className="auth-hero relative hidden min-h-dvh overflow-hidden border-r border-line bg-hero px-12 py-10 lg:flex lg:flex-col xl:px-20 xl:py-14">
       <header className="relative flex items-center gap-3">
         <BrandMark />
         <div>
@@ -196,7 +197,11 @@ function HeroPreview() {
                   {["本周必须完成的核心目标", "需要协作与验证的依赖项", "可延后但需记录的优化项"].map(
                     (item) => (
                       <p key={item} className="flex items-center gap-2">
-                        <CheckCircle size={15} className="text-success" aria-hidden="true" />
+                        <AppIcon
+                          icon={faCircleCheck}
+                          size={15}
+                          className="text-success"
+                        />
                         {item}
                       </p>
                     )
@@ -209,7 +214,11 @@ function HeroPreview() {
       </div>
 
       <footer className="relative flex items-center gap-2 text-xs text-muted">
-        <ShieldCheck size={17} className="text-success" aria-hidden="true" />
+        <AppIcon
+          icon={faShieldHalved}
+          size={17}
+          className="text-success"
+        />
         刷新凭证保存在 HttpOnly Cookie，前端不接触长期密钥
       </footer>
     </section>

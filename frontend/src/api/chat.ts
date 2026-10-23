@@ -61,11 +61,14 @@ export async function* streamChat(
 }
 
 
-interface DeleteDto {
-  messageIds: string[],
-  conversationId: string,
+export interface DeleteMessagesPayload {
+  conversationId: string;
+  messageIds: string[];
 }
 
-export async function deleteMessage(deleteDto: DeleteDto) {
-  return api.post("/api/chat/delete", { deleteDto })
+export async function deleteMessages({
+  conversationId,
+  messageIds,
+}: DeleteMessagesPayload) {
+  await api.post<void>("/chat/delete", { conversationId, messageIds });
 }

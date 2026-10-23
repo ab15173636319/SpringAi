@@ -22,13 +22,20 @@ page.on("console", (message) => {
 });
 page.on("pageerror", (error) => consoleErrors.push(error.message));
 
-await page.goto("http://127.0.0.1:5173/login", { waitUntil: "networkidle" });
+await page.goto("http://localhost:5173/login", { waitUntil: "networkidle" });
 await page.screenshot({
   path: resolve(outputDir, "auth-desktop.png"),
   fullPage: true,
 });
+await page.getByRole("button", { name: "切换到深色主题" }).click();
+await page.waitForTimeout(250);
+await page.screenshot({
+  path: resolve(outputDir, "auth-dark-desktop.png"),
+  fullPage: true,
+});
+await page.getByRole("button", { name: "切换到浅色主题" }).click();
 
-await page.goto("http://127.0.0.1:5173/register", {
+await page.goto("http://localhost:5173/register", {
   waitUntil: "networkidle",
 });
 const suffix = Date.now().toString().slice(-8);
@@ -100,7 +107,7 @@ const mobileOverflow = await page.evaluate(
   () => document.documentElement.scrollWidth - document.documentElement.clientWidth
 );
 
-await page.goto("http://127.0.0.1:5173/missing-route", {
+await page.goto("http://localhost:5173/missing-route", {
   waitUntil: "networkidle",
 });
 await page.getByRole("heading", { name: "这一页不在对话里。" }).waitFor();
@@ -111,25 +118,25 @@ await page.screenshot({
 });
 
 await page.goto(
-  `http://127.0.0.1:5173/login?redirect=${encodeURIComponent(activeConversationPath)}`,
+  `http://localhost:5173/login?redirect=${encodeURIComponent(activeConversationPath)}`,
   { waitUntil: "networkidle" }
 );
 await page.waitForURL((url) => url.pathname === activeConversationPath);
 const validRedirectWorked = new URL(page.url()).pathname === activeConversationPath;
 
 await page.goto(
-  "http://127.0.0.1:5173/login?redirect=%2F%2Fevil.example",
+  "http://localhost:5173/login?redirect=%2F%2Fevil.example",
   { waitUntil: "networkidle" }
 );
 await page.waitForURL((url) => url.pathname.startsWith("/chat"));
-const openRedirectBlocked = new URL(page.url()).hostname === "127.0.0.1";
+const openRedirectBlocked = new URL(page.url()).hostname === "localhost";
 
 const anonymousContext = await browser.newContext({
   viewport: { width: 1280, height: 900 },
 });
 const anonymousPage = await anonymousContext.newPage();
 await anonymousPage.goto(
-  "http://127.0.0.1:5173/chat/protected-example",
+  "http://localhost:5173/chat/protected-example",
   { waitUntil: "networkidle" }
 );
 await anonymousPage.waitForURL((url) => url.pathname === "/login");
@@ -163,6 +170,7 @@ console.log(
       },
       screenshots: [
         "auth-desktop.png",
+        "auth-dark-desktop.png",
         "chat-desktop.png",
         "chat-response-desktop.png",
         "chat-dark-desktop.png",

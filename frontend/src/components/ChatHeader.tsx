@@ -1,9 +1,10 @@
 import {
-  List,
-  Moon,
-  Sparkle,
-  Sun,
-} from "@phosphor-icons/react";
+  faBars,
+  faMoon,
+  faSun,
+  faWandMagicSparkles,
+} from "@fortawesome/free-solid-svg-icons";
+import { AppIcon } from "./AppIcon";
 import { IconButton } from "./IconButton";
 import { useChatStore } from "../stores/chat";
 import { useThemeStore } from "../stores/theme";
@@ -11,7 +12,7 @@ import { useThemeStore } from "../stores/theme";
 export function ChatMenuButton({ onOpen }: { onOpen: () => void }) {
   return (
     <IconButton label="打开会话侧栏" onClick={onOpen} className="lg:hidden">
-      <List size={21} aria-hidden="true" />
+      <AppIcon icon={faBars} size={21} />
     </IconButton>
   );
 }
@@ -25,7 +26,7 @@ export function ChatHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   const active = conversations.find((item) => item.id === activeId);
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line bg-canvas px-4 sm:px-6 lg:px-8">
+    <header className="app-header flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-4 sm:px-6 lg:px-8">
       <div className="flex min-w-0 items-center gap-2">
         <ChatMenuButton onOpen={onOpenMenu} />
         <div className="min-w-0">
@@ -49,7 +50,11 @@ export function ChatHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
       </div>
       <div className="flex items-center gap-1.5">
         <span className="hidden items-center gap-1.5 text-[11px] font-medium text-muted sm:flex">
-          <Sparkle size={13} className="text-primary" weight="fill" aria-hidden="true" />
+          <AppIcon
+            icon={faWandMagicSparkles}
+            size={13}
+            className="text-primary"
+          />
           上下文已保存
         </span>
         <IconButton
@@ -58,9 +63,9 @@ export function ChatHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
           className="hidden lg:grid"
         >
           {theme === "light" ? (
-            <Moon size={18} aria-hidden="true" />
+            <AppIcon icon={faMoon} size={18} />
           ) : (
-            <Sun size={18} aria-hidden="true" />
+            <AppIcon icon={faSun} size={18} />
           )}
         </IconButton>
       </div>

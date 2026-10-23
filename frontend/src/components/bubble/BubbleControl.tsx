@@ -1,10 +1,16 @@
-import { Check, Clock, Copy, Trash } from "@phosphor-icons/react";
+import {
+    faCheck,
+    faClock,
+    faCopy,
+    faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { AppIcon } from "../AppIcon";
 import { cn } from "../../lib/cn";
 import { timeOfDay } from "../../lib/format";
-import { useChatStore } from "../../stores/chat";
 import type { ChatMessage } from "../../types";
+import { useChatStore } from "../../stores/chat";
 
 interface BubbleControlProps {
     message: ChatMessage;
@@ -17,7 +23,8 @@ export function BubbleControl({
     align = "start",
     className,
 }: BubbleControlProps) {
-    const deleteMessage = useChatStore((state) => state.deleteMessage);
+
+    const enableDelete = useChatStore((state) => state.enableDelete);
     const [copied, setCopied] = useState(false);
     const timer = useRef<number | undefined>(undefined);
 
@@ -40,7 +47,7 @@ export function BubbleControl({
     return (
         <div
             className={cn(
-                "mt-1 flex items-center gap-0.5 text-muted",
+                "bubble-controls mt-1 flex items-center gap-0.5 text-muted",
                 align === "end" ? "justify-end" : "justify-start",
                 className
             )}
@@ -51,7 +58,7 @@ export function BubbleControl({
                 aria-label={`发送时间 ${timeOfDay(message.createdAt)}`}
             >
                 <div className=" flex items-center gap-1">
-                    <Clock size={13} aria-hidden="true" />
+                    <AppIcon icon={faClock} size={13} />
                     <span>{timeOfDay(message.createdAt)}</span>
                 </div>
             </span>
@@ -61,18 +68,18 @@ export function BubbleControl({
                 disabled={!canCopy}
             >
                 {copied ? (
-                    <Check size={15} weight="bold" aria-hidden="true" />
+                    <AppIcon icon={faCheck} size={15} />
                 ) : (
-                    <Copy size={15} aria-hidden="true" />
+                    <AppIcon icon={faCopy} size={15} />
                 )}
             </ControlButton>
             <ControlButton
                 label="删除"
-                onClick={() => deleteMessage(message.id)}
+                onClick={enableDelete}
                 disabled={busy}
                 danger
             >
-                <Trash size={15} aria-hidden="true" />
+                <AppIcon icon={faTrashCan} size={15} />
             </ControlButton>
         </div>
     );

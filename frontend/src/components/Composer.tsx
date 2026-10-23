@@ -1,5 +1,6 @@
-import { ArrowUp, Stop } from "@phosphor-icons/react";
+import { faArrowUp, faStop } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { AppIcon } from "./AppIcon";
 import { IconButton } from "./IconButton";
 
 interface ComposerProps {
@@ -47,9 +48,9 @@ export function Composer({
   };
 
   return (
-    <div className="relative bg-canvas px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-4 sm:px-6 lg:px-8">
+    <div className="composer-dock relative px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-xl border border-line bg-panel p-2 transition-[border-color] duration-150 focus-within:border-primary">
+        <div className="composer-panel border p-2">
           <label htmlFor="message-composer" className="sr-only">
             输入消息
           </label>
@@ -78,9 +79,9 @@ export function Composer({
               <IconButton
                 label="停止生成"
                 onClick={onStop}
-                className="bg-ink text-canvas hover:bg-ink/85 hover:text-canvas"
+                className="bg-ink text-canvas hover:bg-ink/85 hover:text-canvas dark:bg-primary dark:text-on-primary dark:hover:bg-primary-strong"
               >
-                <Stop size={17} weight="fill" aria-hidden="true" />
+                <AppIcon icon={faStop} size={17} />
               </IconButton>
             ) : (
               <IconButton
@@ -89,9 +90,9 @@ export function Composer({
                   void submit();
                 }}
                 disabled={!value.trim() || disabled}
-                className="bg-ink text-canvas hover:bg-primary hover:text-on-primary disabled:opacity-35"
+                className="bg-ink text-canvas hover:bg-primary hover:text-on-primary disabled:opacity-35 dark:bg-primary dark:text-on-primary dark:hover:bg-primary-strong"
               >
-                <ArrowUp size={18} weight="bold" aria-hidden="true" />
+                <AppIcon icon={faArrowUp} size={18} />
               </IconButton>
             )}
           </div>

@@ -1,5 +1,6 @@
-import { Eye, EyeSlash } from "@phosphor-icons/react";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useId, useState, type InputHTMLAttributes } from "react";
+import { AppIcon } from "../../components/AppIcon";
 import { cn } from "../../lib/cn";
 
 const inputClass =
@@ -59,9 +60,9 @@ export function PasswordField({
           aria-label={visible ? "隐藏密码" : "显示密码"}
         >
           {visible ? (
-            <EyeSlash size={19} aria-hidden="true" />
+            <AppIcon icon={faEyeSlash} size={19} />
           ) : (
-            <Eye size={19} aria-hidden="true" />
+            <AppIcon icon={faEye} size={19} />
           )}
         </button>
       </span>

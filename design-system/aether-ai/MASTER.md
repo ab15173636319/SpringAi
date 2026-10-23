@@ -35,10 +35,27 @@
 
 **Color Notes:** Porcelain surfaces, blue-black ink and cobalt actions. Use teal only as a secondary accent.
 
+### Dark Theme
+
+| Role | Hex |
+|------|-----|
+| Background | `#10151D` |
+| Sidebar | `#121923` |
+| Panel | `#18212D` |
+| Foreground | `#F2F5F8` |
+| Muted Foreground | `#9DAABA` |
+| Border | `#2A3746` |
+| Primary | `#7DA3FF` |
+| On Primary | `#09101D` |
+| Accent | `#76CBB5` |
+
+Dark mode uses blue-black depth rather than warm brown. Primary actions remain cobalt and never turn into the light foreground color.
+
 ### Typography
 
 - **Heading Font:** Instrument Serif
 - **Body Font:** Inter
+- **CJK Display Fallback:** Noto Serif SC → Source Han Serif SC → Songti SC → STSong → SimSun
 - **Mood:** editorial, quiet, warm, precise, human, considered
 - **Google Fonts:** [Instrument Serif + Inter](https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap)
 
@@ -168,6 +185,8 @@
 **Best For:** AI products, chatbots, voice assistants, copilots, AI-powered tools, conversational interfaces
 
 **Key Effects:** Quiet streaming indicator, open editorial responses, restrained state transitions.
+
+**Surface Treatment:** Use a fine dot field, one broad concentric ring and low-contrast cobalt/teal glows to add atmosphere without introducing heavy cards. Keep the main reading column calm and borderless.
 
 ### Page Pattern
 

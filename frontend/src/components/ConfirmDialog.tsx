@@ -1,5 +1,9 @@
-import { WarningCircle, X } from "@phosphor-icons/react";
+import {
+  faCircleExclamation,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef } from "react";
+import { AppIcon } from "./AppIcon";
 import { Button } from "./Button";
 
 interface ConfirmDialogProps {
@@ -75,7 +79,7 @@ export function ConfirmDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <span className="grid size-10 place-items-center rounded-full bg-danger-soft text-danger">
-            <WarningCircle size={23} weight="duotone" aria-hidden="true" />
+            <AppIcon icon={faCircleExclamation} size={23} />
           </span>
           <button
             ref={closeButton}
@@ -84,7 +88,7 @@ export function ConfirmDialog({
             className="focus-ring grid size-10 cursor-pointer place-items-center rounded-xl text-muted hover:bg-surface-muted hover:text-ink"
             aria-label="关闭确认窗口"
           >
-            <X size={19} aria-hidden="true" />
+            <AppIcon icon={faXmark} size={19} />
           </button>
         </div>
         <h2 id="confirm-title" className="mt-5 text-xl font-bold tracking-[-0.02em]">

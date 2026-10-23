@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import * as conversationApi from "../api/conversations";
-import { streamChat } from "../api/chat";
+import { deleteMessages as requestDeleteMessages, streamChat } from "../api/chat";
 import * as workspaceApi from "../api/workspace";
 import type {
   ChatMessage,
@@ -20,18 +20,23 @@ interface ChatState {
   streaming: boolean;
   error: string | null;
   abortController: AbortController | null;
+  isDeletion: boolean;
+  messageArray: string[];
   initialize: () => Promise<void>;
   selectConversation: (id: string) => Promise<void>;
   createConversation: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   stopStreaming: () => void;
   deleteMessage: (id: string) => void;
+  deleteMessages: (ids: string[]) => Promise<void>;
   renameConversation: (id: string, title: string) => Promise<void>;
   togglePin: (id: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
   clearConversation: () => Promise<void>;
   refreshUsage: () => Promise<void>;
   clearError: () => void;
+  enableDelete: () => void;
+  changeMessageArray: (id: string) => void;
 }
 
 function sortConversations(items: Conversation[]) {
@@ -52,6 +57,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streaming: false,
   error: null,
   abortController: null,
+  isDeletion: false,
+  messageArray: [],
 
   initialize: async () => {
     set({ initializing: true, error: null });
@@ -171,10 +178,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
           messages: state.messages.map((message) =>
             message.id === assistantMessage.id
               ? {
-                  ...message,
-                  pending: false,
-                  content: accumulated || "回答已停止",
-                }
+                ...message,
+                pending: false,
+                content: accumulated || "回答已停止",
+              }
               : message
           ),
         }));
@@ -186,11 +193,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
           messages: state.messages.map((item) =>
             item.id === assistantMessage.id
               ? {
-                  ...item,
-                  content: accumulated || message,
-                  pending: false,
-                  error: !accumulated,
-                }
+                ...item,
+                content: accumulated || message,
+                pending: false,
+                error: !accumulated,
+              }
               : item
           ),
         }));
@@ -217,6 +224,38 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({
       messages: state.messages.filter((message) => message.id !== id),
     }));
+  },
+
+  // 批量删除：先乐观移除并退出删除模式，失败时回滚消息与选中态
+  deleteMessages: async (ids) => {
+    const conversationId = get().activeId;
+    const targetIds = get()
+      .messages.filter((message) => ids.includes(message.id) && !message.pending)
+      .map((message) => message.id);
+    if (!conversationId || targetIds.length === 0) return;
+
+    const snapshot = get().messages;
+    set({
+      messages: snapshot.filter((message) => !targetIds.includes(message.id)),
+      isDeletion: false,
+      messageArray: [],
+      error: null,
+    });
+
+    try {
+      await requestDeleteMessages({ conversationId, messageIds: targetIds });
+      conversationApi
+        .listConversations()
+        .then((items) => set({ conversations: sortConversations(items) }))
+        .catch(() => undefined);
+    } catch (error) {
+      set({
+        messages: snapshot,
+        isDeletion: true,
+        messageArray: targetIds,
+        error: error instanceof Error ? error.message : "删除消息失败",
+      });
+    }
   },
 
   renameConversation: async (id, title) => {
@@ -292,6 +331,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } catch {
       // Usage is non-critical; the next successful action will refresh it.
     }
+  },
+
+  enableDelete: () => {
+    set((state) => ({ isDeletion: !state.isDeletion }));
+  },
+
+  changeMessageArray: (id: string) => {
+    set((state) => ({
+      messageArray: state.messageArray.includes(id)
+        ? state.messageArray.filter((item) => item !== id)
+        : [...state.messageArray, id],
+    }));
   },
 
   clearError: () => set({ error: null }),

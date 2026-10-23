@@ -1,10 +1,12 @@
-import { ArrowUpRight } from "@phosphor-icons/react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { useLayoutEffect, useRef } from "react";
+import { AppIcon } from "../components/AppIcon";
 import { AssistantBubble } from "../components/bubble/AssistantBubble";
 import { BrandMark } from "../components/BrandMark";
 import { UserBubble } from "../components/bubble/UserBubble";
 import { useChatStore } from "../stores/chat";
 import type { ChatMessage } from "../types";
+import BubbleDelete from "../components/bubble/BubbleDelete";
 
 function MessageItem({ message }: { message: ChatMessage }) {
   return message.role === "USER" ? (
@@ -54,7 +56,7 @@ export function MessageList({
   const messages = useChatStore((state) => state.messages);
   const loading = useChatStore((state) => state.loadingMessages);
   const streaming = useChatStore((state) => state.streaming);
-  const [messageArray, setMessageArray] = useState<string[]>([])
+  const isDelete = useChatStore((state) => state.isDeletion)
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const followRef = useRef(true);
@@ -67,6 +69,8 @@ export function MessageList({
       });
     }
   }, [messages, loading, streaming]);
+
+
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -87,11 +91,13 @@ export function MessageList({
           ) : (
             <div>
               {messages.map((message) => (
-                <div key={message.id}>
-                  <div className=" size-4 relative">
-                    <input className=" absolute size-4  cursor-pointer invisible " type="checkbox" name="" id="" />
-                    <div className=" size-4 bg-amber-200"></div>
-                  </div>
+                <div className=" flex gap-5" key={message.id}>
+                  {
+                    isDelete
+                      ?
+                      <BubbleDelete id={message.id}  />
+                      :
+                      null}
                   <MessageItem message={message} />
                 </div>
               ))}
@@ -121,7 +127,7 @@ const suggestions = [
 
 function EmptyState({ onSuggestion }: { onSuggestion: (prompt: string) => void }) {
   return (
-    <section className="flex min-h-[58vh] flex-col justify-center py-10">
+    <section className="empty-workspace flex min-h-[58vh] flex-col justify-center py-10">
       <BrandMark size="lg" />
       <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
         A new page
@@ -138,7 +144,7 @@ function EmptyState({ onSuggestion }: { onSuggestion: (prompt: string) => void }
             key={suggestion.title}
             type="button"
             onClick={() => onSuggestion(suggestion.prompt)}
-            className="focus-ring group flex min-h-16 w-full cursor-pointer items-center gap-4 border-b border-line px-1 py-4 text-left transition-colors duration-150 hover:bg-panel/60"
+            className="prompt-row focus-ring group flex min-h-16 w-full cursor-pointer items-center gap-4 border-b border-line px-1 py-4 text-left transition-colors duration-150"
           >
             <span className="w-6 shrink-0 text-[11px] tabular-nums text-muted">
               0{index + 1}
@@ -151,10 +157,10 @@ function EmptyState({ onSuggestion }: { onSuggestion: (prompt: string) => void }
                 {suggestion.prompt}
               </span>
             </span>
-            <ArrowUpRight
+            <AppIcon
+              icon={faArrowUpRightFromSquare}
               size={17}
               className="shrink-0 text-muted transition-[color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
-              aria-hidden="true"
             />
           </button>
         ))}

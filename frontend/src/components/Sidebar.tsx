@@ -1,16 +1,16 @@
 import {
-  Broom,
-  DotsThree,
-  MagnifyingGlass,
-  Moon,
-  PencilSimple,
-  Plus,
-  PushPin,
-  SignOut,
-  Sun,
-  Trash,
-  X,
-} from "@phosphor-icons/react";
+  faBroom,
+  faEllipsis,
+  faMagnifyingGlass,
+  faMoon,
+  faPen,
+  faPlus,
+  faRightFromBracket,
+  faSun,
+  faThumbtack,
+  faTrashCan,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   useEffect,
   useMemo,
@@ -23,6 +23,7 @@ import { BrandMark } from "./BrandMark";
 import { Button } from "./Button";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { IconButton } from "./IconButton";
+import { AppIcon } from "./AppIcon";
 import { cn } from "../lib/cn";
 import { relativeTime } from "../lib/format";
 import { useAuthStore } from "../stores/auth";
@@ -137,7 +138,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[min(88vw,320px)] flex-col border-r border-line bg-sidebar px-3 pb-3 pt-4 shadow-2xl transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] lg:relative lg:z-0 lg:w-[304px] lg:translate-x-0 lg:shadow-none",
+          "app-sidebar fixed inset-y-0 left-0 z-40 flex w-[min(88vw,320px)] flex-col border-r border-line bg-sidebar px-3 pb-3 pt-4 shadow-2xl transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] lg:relative lg:z-0 lg:w-[304px] lg:translate-x-0 lg:shadow-none",
           open ? "translate-x-0" : "-translate-x-full"
         )}
         aria-label="会话导航"
@@ -151,13 +152,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </div>
           </div>
           <IconButton label="关闭侧栏" onClick={onClose} className="lg:hidden">
-            <X size={19} aria-hidden="true" />
+            <AppIcon icon={faXmark} size={19} />
           </IconButton>
         </div>
 
         <Button onClick={startNew} className="mt-4 w-full justify-between px-3.5">
           <span className="flex items-center gap-2">
-            <Plus size={18} weight="bold" aria-hidden="true" />
+            <AppIcon icon={faPlus} size={18} />
             新建对话
           </span>
           <kbd className="rounded-md border border-white/20 px-1.5 py-0.5 text-[10px] font-medium text-on-primary/75">
@@ -167,10 +168,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         <label className="relative mt-4 block">
           <span className="sr-only">搜索会话</span>
-          <MagnifyingGlass
+          <AppIcon
+            icon={faMagnifyingGlass}
             size={17}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
-            aria-hidden="true"
           />
           <input
             value={query}
@@ -258,9 +259,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                             </span>
                             <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
                               {conversation.pinned && (
-                                <PushPin
+                                <AppIcon
+                                  icon={faThumbtack}
                                   size={11}
-                                  weight="fill"
                                   className="text-primary"
                                   aria-label="已置顶"
                                 />
@@ -280,12 +281,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                           aria-expanded={menuId === conversation.id}
                           className="focus-ring absolute right-1.5 top-2.5 grid size-9 cursor-pointer place-items-center rounded-lg text-muted opacity-70 transition-opacity hover:bg-surface-muted hover:text-ink group-hover:opacity-100 focus-visible:opacity-100"
                         >
-                          <DotsThree size={20} weight="bold" aria-hidden="true" />
+                          <AppIcon icon={faEllipsis} size={20} />
                         </button>
                         {menuId === conversation.id && (
                           <div className="absolute right-2 top-12 z-20 w-40 origin-top-right rounded-lg border border-line bg-panel p-1.5 shadow-xl">
                             <MenuAction
-                              icon={<PushPin size={16} aria-hidden="true" />}
+                              icon={<AppIcon icon={faThumbtack} size={16} />}
                               label={conversation.pinned ? "取消置顶" : "置顶会话"}
                               onClick={() => {
                                 setMenuId(null);
@@ -293,13 +294,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                               }}
                             />
                             <MenuAction
-                              icon={<PencilSimple size={16} aria-hidden="true" />}
+                              icon={<AppIcon icon={faPen} size={16} />}
                               label="重命名"
                               onClick={() => beginRename(conversation)}
                             />
                             {isActive && (
                               <MenuAction
-                                icon={<Broom size={16} aria-hidden="true" />}
+                                icon={<AppIcon icon={faBroom} size={16} />}
                                 label="清空消息"
                                 onClick={() => {
                                   setMenuId(null);
@@ -312,7 +313,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                               />
                             )}
                             <MenuAction
-                              icon={<Trash size={16} aria-hidden="true" />}
+                              icon={<AppIcon icon={faTrashCan} size={16} />}
                               label="删除会话"
                               danger
                               onClick={() => {
@@ -372,9 +373,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             onClick={toggleTheme}
           >
             {theme === "light" ? (
-              <Moon size={17} aria-hidden="true" />
+              <AppIcon icon={faMoon} size={17} />
             ) : (
-              <Sun size={17} aria-hidden="true" />
+              <AppIcon icon={faSun} size={17} />
             )}
           </IconButton>
           <IconButton
@@ -383,7 +384,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               void logout();
             }}
           >
-            <SignOut size={17} aria-hidden="true" />
+            <AppIcon icon={faRightFromBracket} size={17} />
           </IconButton>
         </div>
       </aside>
