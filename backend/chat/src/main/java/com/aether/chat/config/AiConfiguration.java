@@ -1,6 +1,7 @@
 package com.aether.chat.config;
 
 import com.aether.chat.tool.AMap;
+import com.aether.chat.tool.ShowApi;
 import com.aether.chat.tool.Time;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -15,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 public class AiConfiguration {
 
     @Bean
-    public ChatClient chatClient(ChatModel chatModel, AMap aMap, Time time) {
+    public ChatClient chatClient(ChatModel chatModel, AMap aMap, Time time, ShowApi showApi) {
 
         return ChatClient.create(chatModel)
                 .prompt(
@@ -26,10 +27,9 @@ public class AiConfiguration {
                                 调用相应工具查询数据”、“请问有什么我可以帮您的吗”等）。"
                                 """
                 )
-                .tools(aMap, time)
+                .tools(aMap, time, showApi)
                 .mutate()
                 .build();
-
     }
 
 

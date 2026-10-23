@@ -1,6 +1,7 @@
 package com.aether.chat.tool;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.ai.tool.annotation.Tool;
@@ -20,6 +21,7 @@ import java.net.URL;
 @Component
 @Data
 @Slf4j
+@RequiredArgsConstructor
 public class AMap {
     private String apiKey;
     private String secretKey;
@@ -29,6 +31,8 @@ public class AMap {
     private String amapWalking;
     private String amapGeocode;
 
+    private final HttpUtil httpUtil;
+
 
     @Tool(description = "获取用户定位或位置时使用，未传入ip时获取ip")
     public String getUserIp(@ToolParam(description = "用户ip，获取用户所在位置，未传入则获取用户ip") String ip) throws IOException {
@@ -37,7 +41,7 @@ public class AMap {
             urlStr += "&ip=" + ip;
         }
         log.info("ai调用了工具：{}", urlStr);
-        return getString(urlStr);
+        return httpUtil.getString(urlStr);
 
     }
 
@@ -47,7 +51,7 @@ public class AMap {
             @ToolParam(description = "气象类型，可选值：base/all，base:返回实况天气，all:返回预报天气，可选"
             ) String extensions) throws IOException {
         String urlStr = amapWeather + "?output=xml&key=" + apiKey + "&city=" + adcode + "&extensions=" + extensions;
-        return getString(urlStr);
+        return httpUtil.getString(urlStr);
     }
 
     @Tool(description =
@@ -59,7 +63,7 @@ public class AMap {
         if (city != null && !city.isEmpty()) {
             urlStr += "&city=" + city;
         }
-        return getString(urlStr);
+        return httpUtil.getString(urlStr);
     }
 
     @Tool(description = "路径规划（步行、公交、驾车），传入起点和终点的经纬度，返回路径信息，先查询起点和终点的经纬度，再查询路径信息")
@@ -76,7 +80,7 @@ public class AMap {
         if (destination_id != null && !destination_id.isEmpty()) {
             urlStr += "&destination_id=" + destination_id;
         }
-        return getString(urlStr);
+        return httpUtil.getString(urlStr);
     }
 
 
@@ -112,28 +116,7 @@ public class AMap {
         if (plate != null && !plate.isEmpty()) urlStr += "&plate=" + plate;
         if (cartype != null && !cartype.isEmpty()) urlStr += "&cartype=" + cartype;
         if (ferry != null) urlStr += "&ferry=" + ferry;
-        return getString(urlStr);
-    }
-
-    @NonNull
-    private String getString(String urlStr) throws IOException {
-        URL url = new URL(urlStr);
-        HttpURLConnection http = (HttpURLConnection) url.openConnection();
-        http.setRequestMethod("GET");
-        http.setConnectTimeout(5000);
-        http.setReadTimeout(5000);
-        int code = http.getResponseCode();
-        StringBuilder sb = new StringBuilder();
-        if (code == 200) {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(http.getInputStream(), "UTF-8"));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-            bufferedReader.close();
-        }
-        http.disconnect();
-        return sb.toString();
+        return httpUtil.getString(urlStr);
     }
 
 }

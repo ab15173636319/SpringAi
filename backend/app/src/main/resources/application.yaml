@@ -67,3 +67,7 @@ config:
     amap_road: https://restapi.amap.com/v3/traffic/status/road # 获取道路交通状态 未使用
     amap_bus: https://restapi.amap.com/v3/bus/stopid # 获取公交站点信息 未使用
     amap_etd_driving: https://restapi.amap.com/v4/etd/driving # 高级路线规划 未使用
+  showapi:
+    appKey: ${SHOWPIECE_APIKEY}
+    huangli: https://route.showapi.com/856-2
+
