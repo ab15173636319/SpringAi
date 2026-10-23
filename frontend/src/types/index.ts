@@ -42,6 +42,8 @@ export interface ChatMessage {
   createdAt: string;
   pending?: boolean;
   error?: boolean;
+  /** 仅存在于本地、后端尚无对应记录（id 还是临时值） */
+  unsynced?: boolean;
 }
 
 export interface Usage {

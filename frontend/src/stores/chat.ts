@@ -46,6 +46,76 @@ function sortConversations(items: Conversation[]) {
   });
 }
 
+/**
+ * 把服务端新落库的消息按角色顺序配对到本地乐观消息上，用真实的 MongoDB _id 替换临时 id。
+ * 本地 id 由 crypto.randomUUID() 生成，只是占位；后端删除只认 _id，不替换就会出现
+ * “第一次删除无效、刷新后才能删掉”的现象。
+ */
+function adoptServerIds(
+  messages: ChatMessage[],
+  freshMessages: ChatMessage[],
+  optimisticIds: string[]
+) {
+  if (freshMessages.length === 0) return null;
+  const adopted = new Map<string, ChatMessage>();
+  let cursor = 0;
+  for (const id of optimisticIds) {
+    const local = messages.find((message) => message.id === id);
+    if (!local) continue;
+    const index = freshMessages.findIndex(
+      (message, position) => position >= cursor && message.role === local.role
+    );
+    if (index === -1) continue;
+    adopted.set(id, freshMessages[index]);
+    cursor = index + 1;
+  }
+  if (adopted.size === 0) return null;
+  return messages.map((message) => {
+    const persisted = adopted.get(message.id);
+    if (!persisted) return message;
+    return {
+      ...message,
+      id: persisted.id,
+      conversationId: persisted.conversationId ?? message.conversationId,
+      createdAt: persisted.createdAt,
+      unsynced: false,
+    };
+  });
+}
+
+/**
+ * 流式结束后拉取最新消息，把本轮落库消息的真实 id 回填到本地。
+ * 中断场景下后端可能在连接关闭后才写入助手回复，故带一次延迟重试。
+ */
+async function syncPersistedMessages(
+  conversationId: string,
+  knownIds: Set<string>,
+  optimisticIds: string[]
+) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (attempt > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+    if (useChatStore.getState().activeId !== conversationId) return;
+    let serverMessages: ChatMessage[];
+    try {
+      serverMessages = await conversationApi.getMessages(conversationId);
+    } catch {
+      return;
+    }
+    const state = useChatStore.getState();
+    if (state.activeId !== conversationId) return;
+    const fresh = serverMessages.filter((message) => !knownIds.has(message.id));
+    const next = adoptServerIds(state.messages, fresh, optimisticIds);
+    if (!next) return;
+    useChatStore.setState({ messages: next });
+    const pendingIds = optimisticIds.filter((id) =>
+      next.some((message) => message.id === id)
+    );
+    if (pendingIds.length === 0) return;
+  }
+}
+
 export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   activeId: null,
@@ -130,12 +200,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
     if (!text || !conversationId || get().streaming) return;
 
     const now = new Date().toISOString();
+    // 记录发送前的已知 id，流结束后据此识别本轮新落库的消息
+    const knownIds = new Set(get().messages.map((message) => message.id));
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       conversationId,
       role: "USER",
       content: text,
       createdAt: now,
+      unsynced: true,
     };
     const assistantMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -144,6 +217,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       content: "",
       createdAt: now,
       pending: true,
+      unsynced: true,
     };
     const controller = new AbortController();
     set((state) => ({
@@ -210,6 +284,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ),
         workspaceApi.getUsage().then((usage) => set({ usage })),
       ]).catch(() => undefined);
+      await syncPersistedMessages(conversationId, knownIds, [
+        userMessage.id,
+        assistantMessage.id,
+      ]);
     }
   },
 
@@ -229,10 +307,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
   // 批量删除：先乐观移除并退出删除模式，失败时回滚消息与选中态
   deleteMessages: async (ids) => {
     const conversationId = get().activeId;
-    const targetIds = get()
-      .messages.filter((message) => ids.includes(message.id) && !message.pending)
+    const targets = get().messages.filter(
+      (message) => ids.includes(message.id) && !message.pending
+    );
+    if (!conversationId || targets.length === 0) return;
+
+    const targetIds = targets.map((message) => message.id);
+    // 未落库的本地消息后端并不存在，只做本地移除，绝不把临时 id 提交给后端
+    const persistedIds = targets
+      .filter((message) => !message.unsynced)
       .map((message) => message.id);
-    if (!conversationId || targetIds.length === 0) return;
 
     const snapshot = get().messages;
     set({
@@ -242,8 +326,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       error: null,
     });
 
+    if (persistedIds.length === 0) return;
+
     try {
-      await requestDeleteMessages({ conversationId, messageIds: targetIds });
+      await requestDeleteMessages({ conversationId, messageIds: persistedIds });
       conversationApi
         .listConversations()
         .then((items) => set({ conversations: sortConversations(items) }))
