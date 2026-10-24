@@ -8,7 +8,9 @@ import com.aether.chat.pojo.dto.UpdateConversationRequest;
 import com.aether.chat.pojo.entity.Conversation;
 import com.aether.chat.pojo.vto.ConversationView;
 import com.aether.chat.service.ConversationService;
-import com.aether.common.error.ApiException;
+import com.aether.common.error.BusinessException;
+import com.aether.common.result.ResponseCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,20 +21,11 @@ import java.util.List;
  * 会话服务实现：基于 {@link ConversationMapper} 与 {@link ChatMessageMapper} 维护会话及其消息。
  */
 @Service
+@RequiredArgsConstructor
 public class ConversationServiceImpl implements ConversationService {
     private final ConversationMapper repository;
     private final ChatMessageMapper messageRepository;
     private final AiProperties aiProperties;
-
-    public ConversationServiceImpl(
-            ConversationMapper repository,
-            ChatMessageMapper messageRepository,
-            AiProperties aiProperties
-    ) {
-        this.repository = repository;
-        this.messageRepository = messageRepository;
-        this.aiProperties = aiProperties;
-    }
 
     /**
      * 查询用户的会话列表，置顶优先，其次按更新时间倒序。
@@ -129,11 +122,14 @@ public class ConversationServiceImpl implements ConversationService {
      * @param userId 用户 ID
      * @param id     会话 ID
      * @return 通过校验的会话实体
-     * @throws ApiException 会话不存在或不属于该用户时抛出 404
+     * @throws BusinessException 会话不存在或不属于该用户时抛出 404
      */
     public Conversation requireOwned(String userId, String id) {
         return repository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> ApiException.notFound("会话不存在或无权访问"));
+                .orElseThrow(() -> new BusinessException(
+                        ResponseCode.NOT_FOUND,
+                        "会话不存在或无权访问"
+                ));
     }
 
     /**

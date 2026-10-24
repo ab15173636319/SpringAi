@@ -1,5 +1,5 @@
 import type { AuthResponse, User } from "../types";
-import { api, refreshAccessToken } from "./client";
+import { api, refreshAccessToken } from "./http";
 
 export async function login(identifier: string, password: string) {
   return api.post<AuthResponse>(
@@ -27,7 +27,7 @@ export async function refresh() {
 }
 
 export async function logout() {
-  await api.post<void>("/auth/logout", undefined, {
+  await api.post<null>("/auth/logout", undefined, {
     skipAuth: true,
     skipAuthRefresh: true,
   });

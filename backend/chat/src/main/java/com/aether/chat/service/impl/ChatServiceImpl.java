@@ -7,16 +7,13 @@ import com.aether.chat.pojo.entity.MessageRole;
 import com.aether.chat.service.ChatService;
 import com.aether.chat.service.ConversationService;
 import com.aether.chat.service.UsageService;
-import com.aether.chat.tool.UtilityTools;
-import com.aether.common.error.ApiException;
+import com.aether.common.error.BusinessException;
+import com.aether.common.result.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.SignalType;
@@ -45,7 +42,6 @@ public class ChatServiceImpl implements ChatService {
     private final ConversationService conversationService;
     private final UsageService usageService;
     private final AiProperties properties;
-    private final UtilityTools utilityTools;
     private final ChatClient chatClient;
 
     /**
@@ -63,11 +59,14 @@ public class ChatServiceImpl implements ChatService {
         return Flux.defer(() -> {
             conversationService.requireOwned(userId, conversationId);
             if (!usageService.tryConsume(userId)) {
-                return Flux.error(ApiException.tooManyRequests("今日对话额度已用完，请在明天继续"));
+                return Flux.error(new BusinessException(
+                        ResponseCode.TOO_MANY_REQUESTS,
+                        "今日对话额度已用完，请在明天继续"
+                ));
             }
 
             List<Message> context = loadContext(conversationId, userId);
-            ChatMessage userMessage = messageRepository.insert(ChatMessage.builder()
+            messageRepository.insert(ChatMessage.builder()
                     .conversationId(conversationId)
                     .userId(userId)
                     .role(MessageRole.USER)
@@ -105,9 +104,13 @@ public class ChatServiceImpl implements ChatService {
                             persistResponse.run();
                         }
                     })
-                    .onErrorMap(error -> error instanceof ApiException
+                    .onErrorMap(error -> error instanceof BusinessException
                             ? error
-                            : new ApiException(HttpStatus.BAD_GATEWAY, "AI 服务暂时不可用，请稍后重试"));
+                            : new BusinessException(
+                                    ResponseCode.BAD_GATEWAY,
+                                    "AI 服务暂时不可用，请稍后重试",
+                                    error
+                            ));
         });
     }
 
@@ -123,7 +126,6 @@ public class ChatServiceImpl implements ChatService {
                 .system(SYSTEM_PROMPT)
                 .messages(context)
                 .user(prompt)
-                .tools(utilityTools)
                 .stream()
                 .content();
     }

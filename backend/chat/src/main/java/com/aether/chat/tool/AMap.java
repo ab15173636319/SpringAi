@@ -40,7 +40,7 @@ public class AMap {
         if (ip != null && !ip.isEmpty()) {
             urlStr += "&ip=" + ip;
         }
-        log.info("ai调用了工具：{}", urlStr);
+        log.info("AI 调用了工具：查询 IP 位置");
         return httpUtil.getString(urlStr);
 
     }

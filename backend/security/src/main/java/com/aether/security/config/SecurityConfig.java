@@ -1,12 +1,11 @@
 package com.aether.security.config;
 
-import com.aether.common.pojo.vto.ApiResult;
+import com.aether.common.result.ResponseCode;
+import com.aether.common.result.Result;
 import com.aether.security.filter.JwtAuthenticationFilter;
-import com.aether.security.mapper.UserMapper;
-import com.aether.security.pojo.entity.AuthenticatedUser;
-import com.aether.security.pojo.entity.UserAccount;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +16,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,8 +27,10 @@ import java.io.IOException;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 @EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
+    private final SecurityProperties properties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -60,9 +59,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, exception) ->
-                                writeError(response, objectMapper, 401, "请先登录后再访问"))
+                                writeError(response, objectMapper, ResponseCode.UNAUTHORIZED))
                         .accessDeniedHandler((request, response, exception) ->
-                                writeError(response, objectMapper, 403, "没有执行此操作的权限")))
+                                writeError(response, objectMapper, ResponseCode.FORBIDDEN)))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -73,24 +72,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(UserMapper userRepository) {
-        return username -> {
-            UserAccount account = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            return new AuthenticatedUser(
-                    account.getId(),
-                    account.getUsername(),
-                    account.getDisplayName(),
-                    account.getAvatarColor(),
-                    account.getRole()
-            );
-        };
-    }
-
-    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
+        configuration.setAllowedOrigins(properties.cors().allowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -103,13 +87,12 @@ public class SecurityConfig {
     private void writeError(
             HttpServletResponse response,
             ObjectMapper objectMapper,
-            int status,
-            String message
+            ResponseCode responseCode
     ) throws IOException {
-        response.setStatus(status);
+        response.setStatus(responseCode.httpStatus().value());
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getWriter(), ApiResult.error(status, message));
+        objectMapper.writeValue(response.getWriter(), Result.error(responseCode));
     }
 }
 

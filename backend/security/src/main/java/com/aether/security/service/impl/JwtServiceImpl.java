@@ -1,6 +1,7 @@
 package com.aether.security.service.impl;
 
-import com.aether.common.error.ApiException;
+import com.aether.common.error.BusinessException;
+import com.aether.common.result.ResponseCode;
 import com.aether.security.config.SecurityProperties;
 import com.aether.security.pojo.entity.UserAccount;
 import com.aether.security.service.JwtService;
@@ -70,11 +71,15 @@ public class JwtServiceImpl implements JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
             if (!expectedType.equals(claims.get("type", String.class))) {
-                throw ApiException.unauthorized("Token 类型不正确");
+                throw new BusinessException(ResponseCode.UNAUTHORIZED, "Token 类型不正确");
             }
             return claims;
         } catch (JwtException | IllegalArgumentException exception) {
-            throw ApiException.unauthorized("登录凭证无效或已过期");
+            throw new BusinessException(
+                    ResponseCode.UNAUTHORIZED,
+                    "登录凭证无效或已过期",
+                    exception
+            );
         }
     }
 

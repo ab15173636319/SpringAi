@@ -13,6 +13,14 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@api/*": ["./src/api/*"],
+      "@css/*": ["./src/assets/styles/*"],
+      "@type/*": ["./src/types/*"],
+      "@utils/*": ["./src/lib/*"],
+      "@views/*": ["./src/views/*"]
+    },
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",

@@ -35,7 +35,7 @@ public class ShowApi {
             String date) throws IOException {
         String ymd = normalizeYmd(date);
         String urlStr = huangli + "?appKey=" + appKey + "&ymd=" + ymd;
-        log.info("ai调用了工具：查询黄历 {}", urlStr);
+        log.info("AI 调用了工具：查询黄历");
         String result = httpUtil.getString(urlStr);
         if (result.isEmpty()) {
             return "黄历查询失败：接口无响应，请稍后重试（ymd=" + ymd + "）";

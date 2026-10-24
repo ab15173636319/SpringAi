@@ -5,7 +5,7 @@
 ## 技术栈
 
 - 后端：Java 17、Spring Boot 4.1、Spring AI 2.0、Spring Security、MongoDB
-- 前端：React 19、TypeScript、Tailwind CSS 4、Vite、Zustand
+- 前端：React 19、TypeScript、Ant Design 6、Tailwind CSS 4、Vite、Zustand
 - 包管理与构建：Bun、Maven
 - AI：DeepSeek；未配置 API Key 时自动进入可交互的本地演示模式
 
@@ -20,8 +20,7 @@
 │   ├── security     # 用户、JWT、刷新会话、Spring Security 配置
 │   ├── chat         # AI 对话、会话、消息、额度、工具
 │   └── app          # Spring Boot 启动模块与运行配置
-├── frontend         # React + TypeScript + Tailwind CSS
-├── design-system    # UI 设计规范
+├── frontend         # React + TypeScript + Ant Design + Tailwind CSS
 ├── docker-compose.yml
 ```
 
@@ -45,11 +44,13 @@ com.aether.<module>
 └── util             # 无状态工具类
 ```
 
-Controller 不直接访问 Mapper，Entity、DTO、VTO 不混放，业务实现统一位于 `service/impl`。
+Controller 不直接访问 Mapper，Entity、DTO、VTO 不混放，业务实现统一位于 `service/impl`。前端页面位于 `frontend/src/views`，路由按业务域拆分在 `router/module`，请求与业务码判断集中在 `api/http.ts`。
+
+所有普通接口统一返回 `{ code, message, data }`。成功码为 `10000`，业务码由后端 `ResponseCode` 与前端 `RESPONSE_CODE` 共同维护；HTTP 状态码继续表达认证、权限和传输语义。
 
 ## 本地启动
 
-环境要求：JDK 17+、Maven 3.9+、Bun 1.2+、本地 MongoDB。
+环境要求：JDK 17+、Bun 1.2+、本地 MongoDB。后端使用仓库内的 Maven Wrapper 3.9.11，不依赖全局安装的 Maven。
 
 当前默认数据库连接：
 
@@ -67,7 +68,9 @@ docker compose up -d mongodb
 
 ```powershell
 cd backend
-mvn -pl app -am spring-boot:run
+$env:JWT_SECRET="至少 32 字节的本地随机密钥"
+$env:COOKIE_SECURE="false"
+.\mvnw.cmd -pl app -am spring-boot:run
 ```
 
 后端默认地址为 `http://localhost:8080`。
@@ -84,12 +87,12 @@ bun run dev
 
 ## AI 配置
 
-不配置 Key 也能启动、注册、创建会话并体验流式输出；页面会明确显示“本地演示模式”。启用 DeepSeek：
+不配置 Key 时会进入演示模式，仍可注册、创建会话并体验流式输出；页面会明确显示“本地演示模式”。启用 DeepSeek：
 
 ```powershell
 $env:DEEPSEEK_API_KEY="你的 DeepSeek API Key"
 cd backend
-mvn -pl app -am spring-boot:run
+.\mvnw.cmd -pl app -am spring-boot:run
 ```
 
 常用环境变量见 [.env.example](./.env.example)：
@@ -98,10 +101,12 @@ mvn -pl app -am spring-boot:run
 |---|---|---|
 | `MONGODB_URI` | 本地 `aether_ai` 数据库 | MongoDB 连接串 |
 | `DEEPSEEK_API_KEY` | 空 | 设置后切换真实 AI |
+| `DEEPSEEK_API_URL` | `https://api.deepseek.com` | DeepSeek API 地址 |
 | `DEEPSEEK_MODEL` | `deepseek-chat` | 模型名称 |
 | `AI_DAILY_LIMIT` | `100` | 每用户每日对话次数 |
-| `JWT_SECRET` | 开发用默认值 | 生产环境必须替换 |
+| `JWT_SECRET` | 无 | 必填，至少 32 字节 |
 | `COOKIE_SECURE` | `false` | HTTPS 部署时设为 `true` |
+| `CORS_ALLOWED_ORIGINS` | 本地 Vite 地址 | 允许访问 API 的前端来源 |
 
 ## 双 Token 鉴权
 
@@ -132,8 +137,9 @@ mvn -pl app -am spring-boot:run
 ## 验证命令
 
 ```powershell
-# 后端编译与测试
-mvn test
+# 后端编译与测试（需要本地 MongoDB）
+cd backend
+.\mvnw.cmd test
 
 # 前端类型检查、构建、Lint
 cd frontend
@@ -147,16 +153,16 @@ bun run visual:check
 
 ## 依赖问题排查
 
-1. IDE 应导入 [backend/pom.xml](./backend/pom.xml) 作为 Maven 根项目，而不是只单独打开 `app/pom.xml`。如果只打开子模块，先执行 `mvn install -DskipTests` 把内部模块安装到本地仓库。
+1. IDE 应导入 [backend/pom.xml](./backend/pom.xml) 作为 Maven 根项目，而不是只单独打开 `app/pom.xml`。如果只打开子模块，先执行 `.\mvnw.cmd install -DskipTests` 把内部模块安装到本地仓库。
 2. 项目使用 Java 17 编译。IDE 的 Project SDK 和 Maven Runner JRE 都应为 JDK 17、21 或 25。
 3. Spring Boot 4 使用 Jackson 3（`tools.jackson`），JJWT 仍使用 Jackson 2（`com.fasterxml.jackson`）。两套包名不同，可以共存，不是版本冲突。
-4. 不要只执行 `mvn -pl app spring-boot:run`；该命令不会自动构建同级的内部模块。使用 `mvn -pl app -am spring-boot:run`。
-5. 拉起依赖异常时执行 `mvn -U clean verify`。仍然失败时，检查 Maven `settings.xml` 镜像是否缺少 Spring AI 2.0.1 或 Spring Boot 4.1.1。
+4. 从 `backend` 目录执行 `.\mvnw.cmd -pl app -am spring-boot:run`；`-am` 会一并构建同级的内部模块。
+5. 拉起依赖异常时执行 `.\mvnw.cmd -U clean verify`。仍然失败时，检查 Maven `settings.xml` 镜像是否缺少 Spring AI 2.0.1 或 Spring Boot 4.1.1。
 
 ## 生产部署注意事项
 
 - 替换 `JWT_SECRET`，建议使用至少 64 字节的随机值。
 - 启用 HTTPS，并设置 `COOKIE_SECURE=true`。
-- 将 `application.yaml` 中的 CORS 白名单改为实际前端域名。
+- 通过 `CORS_ALLOWED_ORIGINS` 将白名单设置为实际前端域名。
 - 不要把 `.env` 或真实 API Key 提交到仓库。
 - 若前后端分域部署，需要重新设计 Refresh Cookie 的 `SameSite`、域名和 CORS 策略；当前默认配置面向同站部署。

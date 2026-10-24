@@ -3,6 +3,7 @@ package com.aether.security.service.impl;
 import com.aether.security.mapper.RefreshSessionMapper;
 import com.aether.security.pojo.entity.RefreshSession;
 import com.aether.security.service.RefreshSessionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -12,14 +13,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshSessionServiceImpl implements RefreshSessionService {
     private final RefreshSessionMapper repository;
     private final MongoTemplate mongoTemplate;
-
-    public RefreshSessionServiceImpl(RefreshSessionMapper repository, MongoTemplate mongoTemplate) {
-        this.repository = repository;
-        this.mongoTemplate = mongoTemplate;
-    }
 
     @Override
     public void create(RefreshSession session) {

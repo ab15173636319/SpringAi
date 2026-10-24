@@ -43,10 +43,14 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
      */
     @Override
     public void delete(String userId, DeleteMessage deleteMessage) {
-        conversationService.requireOwned(userId, deleteMessage.getConversationId());
-        deleteMessage.getMessageIds().forEach(id -> {
-            repository.deleteAllByIdAndConversationIdAndUserId(id, deleteMessage.getConversationId(), userId);
+        conversationService.requireOwned(userId, deleteMessage.conversationId());
+        deleteMessage.messageIds().forEach(id -> {
+            repository.deleteAllByIdAndConversationIdAndUserId(
+                    id,
+                    deleteMessage.conversationId(),
+                    userId
+            );
         });
-        conversationService.touch(userId, deleteMessage.getConversationId());
+        conversationService.touch(userId, deleteMessage.conversationId());
     }
 }

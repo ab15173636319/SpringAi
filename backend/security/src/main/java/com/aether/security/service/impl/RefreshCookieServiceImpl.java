@@ -4,6 +4,7 @@ import com.aether.security.config.SecurityProperties;
 import com.aether.security.service.RefreshCookieService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +13,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshCookieServiceImpl implements RefreshCookieService {
     private final SecurityProperties properties;
-
-    public RefreshCookieServiceImpl(SecurityProperties properties) {
-        this.properties = properties;
-    }
 
     @Override
     public ResponseCookie create(String token) {
@@ -51,7 +49,7 @@ public class RefreshCookieServiceImpl implements RefreshCookieService {
                 .httpOnly(true)
                 .secure(properties.cookie().secure())
                 .sameSite(properties.cookie().sameSite())
-                .path("/api/auth");
+                .path(properties.cookie().path());
     }
 }
 

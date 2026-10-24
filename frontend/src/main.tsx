@@ -1,18 +1,17 @@
 import { StrictMode } from "react";
-
-import { ConfigProvider } from 'antd';
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
+import AppProviders from "./components/AppProviders";
 import { router } from "./router/index";
-import "./assets/styles/main.css"
-import 'dayjs/locale/zh-cn';
+import "./assets/styles/main.css";
 
-import zhCN from 'antd/locale/zh_CN';
+const root = document.getElementById("root");
+if (!root) throw new Error("缺少应用挂载节点 #root");
 
-createRoot(document.getElementById("root")!).render(
+createRoot(root).render(
   <StrictMode>
-    <ConfigProvider locale={zhCN}>
+    <AppProviders>
       <RouterProvider router={router} />
-    </ConfigProvider>
+    </AppProviders>
   </StrictMode>
 );
