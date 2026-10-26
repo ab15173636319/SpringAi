@@ -2,6 +2,8 @@ package com.aether.security.service.impl;
 
 import com.aether.common.constant.Credit;
 import com.aether.common.error.ApiException;
+import com.aether.common.error.BusinessException;
+import com.aether.common.result.ResponseCode;
 import com.aether.security.config.SecurityProperties;
 import com.aether.security.mapper.UserMapper;
 import com.aether.security.pojo.dto.AuthSession;
@@ -18,7 +20,6 @@ import com.aether.security.service.JwtService;
 import com.aether.security.service.TokenSessionService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {

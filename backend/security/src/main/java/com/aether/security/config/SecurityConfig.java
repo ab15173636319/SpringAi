@@ -26,10 +26,9 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Configuration
-@RequiredArgsConstructor
 @EnableConfigurationProperties(SecurityProperties.class)
+@RequiredArgsConstructor
 public class SecurityConfig {
     private final SecurityProperties properties;
 

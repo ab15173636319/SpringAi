@@ -5,6 +5,7 @@ import com.aether.common.result.Result;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -19,16 +20,16 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Result<Void>> handleBusinessException(BusinessException exception) {
-        ResponseCode responseCode = exception.getResponseCode();
-        if (responseCode.httpStatus().is5xxServerError()) {
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Result<Void>> handleApiException(ApiException exception) {
+        HttpStatus status = exception.getStatus();
+        if (status.is5xxServerError()) {
             log.error("业务服务异常：{}", exception.getMessage(), exception);
         } else {
             log.warn("业务请求失败：{}", exception.getMessage());
         }
-        return ResponseEntity.status(responseCode.httpStatus())
-                .body(Result.error(responseCode, exception.getMessage()));
+        return ResponseEntity.status(status)
+                .body(Result.error(exception.getCode(), exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

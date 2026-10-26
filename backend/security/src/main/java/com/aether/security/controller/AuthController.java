@@ -56,7 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResult<Void>> logout(HttpServletRequest request) {
+    public ResponseEntity<Result<Void>> logout(HttpServletRequest request) {
         authService.logout(
                 cookieService.read(request).orElse(null),
                 bearerToken(request)
@@ -75,13 +75,6 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieService.create(session.refreshToken()).toString())
                 .body(Result.success(session.response()));
-    }
-
-    private String bearerToken(HttpServletRequest request) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        return header != null && header.startsWith("Bearer ")
-                ? header.substring(7)
-                : null;
     }
 
     private String bearerToken(HttpServletRequest request) {

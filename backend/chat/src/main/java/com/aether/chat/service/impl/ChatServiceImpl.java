@@ -14,18 +14,14 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.SignalType;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 对话服务实现：校验会话与额度、拼装上下文、调用大模型流式输出，并持久化问答消息。
@@ -60,55 +56,54 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public Flux<String> stream(String userId, String conversationId, String prompt) {
-        return Flux.defer(() -> {
-            conversationService.requireOwned(userId, conversationId);
-            if (!usageService.tryConsume(userId)) {
-                return Flux.error(ApiException.tooManyRequests("今日对话额度已用完，请在明天继续"));
-            }
+        return Flux.defer(() -> doStream(userId, conversationId, prompt));
+    }
 
-            List<Message> context = loadContext(conversationId, userId);
-            ChatMessage userMessage = messageRepository.insert(ChatMessage.builder()
-                    .conversationId(conversationId)
-                    .userId(userId)
-                    .role(MessageRole.USER)
-                    .content(prompt)
-                    .createdAt(Instant.now())
-                    .build());
+    /**
+     * 实际对话流程：被 {@link #stream} 包在 defer 中，保证校验、扣额度、写库等副作用只在该流被订阅时执行一次。
+     */
+    private Flux<String> doStream(String userId, String conversationId, String prompt) {
+        conversationService.requireOwned(userId, conversationId);
+        if (!usageService.tryConsume(userId)) {
+            return Flux.error(ApiException.tooManyRequests("今日对话额度已用完，请在明天继续"));
+        }
 
-            conversationService.markTitleFromFirstMessage(userId, conversationId, prompt);
-            conversationService.touch(userId, conversationId);
+        List<Message> context = loadContext(conversationId, userId);
+        saveMessage(conversationId, userId, MessageRole.USER, prompt);
+        conversationService.markTitleFromFirstMessage(userId, conversationId, prompt);
+        conversationService.touch(userId, conversationId);
 
-            Flux<String> response = properties.isLive() && chatClient != null
-                    ? liveStream(context, prompt)
-                    : demoStream(prompt);
+        StringBuilder answer = new StringBuilder();
+        return (properties.isLive() ? liveStream(context, prompt) : demoStream(prompt))
+                .doOnNext(answer::append)
+                // doFinally 对完成、异常、取消三种信号都只触发一次，无需额外的去重标记
+                .doFinally(signal -> {
+                    if (!answer.isEmpty()) {
+                        saveMessage(conversationId, userId, MessageRole.ASSISTANT, answer.toString());
+                        conversationService.touch(userId, conversationId);
+                    }
+                })
+                .onErrorMap(error -> error instanceof ApiException
+                        ? error
+                        : ApiException.wrap(HttpStatus.BAD_GATEWAY, "AI 服务暂时不可用，请稍后重试", error));
+    }
 
-            StringBuilder answer = new StringBuilder();
-            AtomicBoolean persisted = new AtomicBoolean(false);
-            Runnable persistResponse = () -> {
-                if (persisted.compareAndSet(false, true) && !answer.isEmpty()) {
-                    messageRepository.insert(ChatMessage.builder()
-                            .conversationId(conversationId)
-                            .userId(userId)
-                            .role(MessageRole.ASSISTANT)
-                            .content(answer.toString())
-                            .createdAt(Instant.now())
-                            .build());
-                    conversationService.touch(userId, conversationId);
-                }
-            };
-
-            return response
-                    .doOnNext(answer::append)
-                    .doOnComplete(persistResponse)
-                    .doFinally(signal -> {
-                        if (signal != SignalType.ON_COMPLETE) {
-                            persistResponse.run();
-                        }
-                    })
-                    .onErrorMap(error -> error instanceof ApiException
-                            ? error
-                            : new ApiException(HttpStatus.BAD_GATEWAY, "AI 服务暂时不可用，请稍后重试"));
-        });
+    /**
+     * 持久化一条消息。
+     *
+     * @param conversationId 会话 ID
+     * @param userId         用户 ID
+     * @param role           消息角色
+     * @param content        消息内容
+     */
+    private void saveMessage(String conversationId, String userId, MessageRole role, String content) {
+        messageRepository.insert(ChatMessage.builder()
+                .conversationId(conversationId)
+                .userId(userId)
+                .role(role)
+                .content(content)
+                .createdAt(Instant.now())
+                .build());
     }
 
     /**

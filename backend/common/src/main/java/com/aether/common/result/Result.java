@@ -29,4 +29,8 @@ public record Result<T>(int code, String message, T data) {
     public static <T> Result<T> error(ResponseCode responseCode, String message) {
         return new Result<>(responseCode.code(), message, null);
     }
+
+    public static <T> Result<T> error(int code, String message) {
+        return new Result<>(code, message, null);
+    }
 }
