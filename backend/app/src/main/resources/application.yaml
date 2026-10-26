@@ -8,6 +8,15 @@ spring:
     name: aether-ai
   config:
     import: optional:file:.env[.properties]
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:123456}
+      database: ${REDIS_DB:0}
+      timeout: 3s
+      repositories:
+        enabled: false
   mongodb:
     uri: ${MONGODB_URI:mongodb://root:123456@localhost:27017/aether_ai?authSource=admin}
     auto-index-creation: true
@@ -18,19 +27,26 @@ spring:
       chat:
         options:
           model: ${DEEPSEEK_MODEL:deepseek-chat}
-          temperature: 0.6
+          temperature: 0.8
 
 app:
   ai:
     model: ${DEEPSEEK_MODEL:deepseek-chat}
     deepseek-api-key: ${DEEPSEEK_API_KEY:local-dev-placeholder}
     daily-limit: ${AI_DAILY_LIMIT:100}
+    credit-free: ${AI_CREDIT_FREE}
   security:
     jwt:
       issuer: aether-ai
-      secret: ${JWT_SECRET:replace-this-development-secret-before-production-with-64-random-characters}
+      secret: ${JWT_SECRET}
       access-ttl: 15m
       refresh-ttl: 7d
+    ignore-urls:
+      - /api/auth/login
+      - /api/auth/refresh
+      - /api/auth/register
+      - /api/auth/logout
+      - /api/health
     cookie:
       name: aether_refresh
       secure: ${COOKIE_SECURE:false}
@@ -70,4 +86,3 @@ config:
   showapi:
     appKey: ${SHOWPIECE_APIKEY}
     huangli: https://route.showapi.com/856-2
-

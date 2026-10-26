@@ -7,6 +7,7 @@ import com.aether.security.pojo.entity.AuthenticatedUser;
 import com.aether.security.pojo.entity.UserAccount;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
@@ -37,7 +39,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtFilter,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            IgnoreUrls ignoreUrls
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -47,17 +50,18 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/refresh",
-                                "/api/auth/logout",
-                                "/api/health"
-                        ).permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(authorize -> {
+                    authorize
+                            .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
+                    List<String> ignores = ignoreUrls.getIgnoreUrls();
+                    if (ignores != null) {
+                        ignores.forEach(url -> authorize.requestMatchers(url).permitAll());
+                    }
+
+                    authorize.anyRequest().authenticated();
+                })
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, exception) ->
                                 writeError(response, objectMapper, 401, "请先登录后再访问"))
@@ -72,6 +76,9 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
 
+    /*
+     * 自定义用户详情服务，用于加载用户信息
+     */
     @Bean
     public UserDetailsService userDetailsService(UserMapper userRepository) {
         return username -> {

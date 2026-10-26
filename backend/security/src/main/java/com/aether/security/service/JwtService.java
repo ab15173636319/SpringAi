@@ -1,5 +1,6 @@
 package com.aether.security.service;
 
+import com.aether.security.pojo.dto.IssuedAccessToken;
 import com.aether.security.pojo.entity.UserAccount;
 import io.jsonwebtoken.Claims;
 
@@ -9,7 +10,7 @@ public interface JwtService {
     String ACCESS = "access";
     String REFRESH = "refresh";
 
-    String createAccessToken(UserAccount user, Instant now);
+    IssuedAccessToken createAccessToken(UserAccount user, String sessionId, Instant now);
 
     String createRefreshToken(UserAccount user, String sessionId, Instant now);
 
@@ -17,4 +18,3 @@ public interface JwtService {
 
     String hash(String token);
 }
-

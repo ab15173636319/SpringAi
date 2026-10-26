@@ -13,8 +13,7 @@ public interface AuthService {
 
     AuthSession refresh(String refreshToken);
 
-    void logout(String refreshToken);
+    void logout(String refreshToken, String accessToken);
 
     AuthView current(AuthenticatedUser principal);
 }
-

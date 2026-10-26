@@ -2,6 +2,7 @@ package com.aether.security.service.impl;
 
 import com.aether.common.error.ApiException;
 import com.aether.security.config.SecurityProperties;
+import com.aether.security.pojo.dto.IssuedAccessToken;
 import com.aether.security.pojo.entity.UserAccount;
 import com.aether.security.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -17,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtServiceImpl implements JwtService {
@@ -33,17 +35,21 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String createAccessToken(UserAccount user, Instant now) {
-        return Jwts.builder()
+    public IssuedAccessToken createAccessToken(UserAccount user, String sessionId, Instant now) {
+        String tokenId = UUID.randomUUID().toString();
+        String token = Jwts.builder()
                 .issuer(properties.jwt().issuer())
                 .subject(user.getId())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(properties.jwt().accessTtl())))
+                .id(tokenId)
                 .claim("type", ACCESS)
+                .claim("sid", sessionId)
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole().name())
                 .signWith(signingKey)
                 .compact();
+        return new IssuedAccessToken(token, tokenId, sessionId);
     }
 
     @Override
@@ -55,7 +61,8 @@ public class JwtServiceImpl implements JwtService {
                 .expiration(Date.from(now.plus(properties.jwt().refreshTtl())))
                 .id(sessionId)
                 .claim("type", REFRESH)
-                .claim("nonce", java.util.UUID.randomUUID().toString())
+                .claim("sid", sessionId)
+                .claim("nonce", UUID.randomUUID().toString())
                 .signWith(signingKey)
                 .compact();
     }

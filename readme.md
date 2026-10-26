@@ -4,7 +4,7 @@
 
 ## 技术栈
 
-- 后端：Java 17、Spring Boot 4.1、Spring AI 2.0、Spring Security、MongoDB
+- 后端：Java 17、Spring Boot 4.1、Spring AI 2.0、Spring Security、MongoDB、Redis
 - 前端：React 19、TypeScript、Tailwind CSS 4、Vite、Zustand
 - 包管理与构建：Bun、Maven
 - AI：DeepSeek；未配置 API Key 时自动进入可交互的本地演示模式
@@ -17,7 +17,7 @@
 ├── backend
 │   ├── pom.xml      # 后端父 POM，统一依赖、版本和子模块
 │   ├── common       # 统一响应、业务异常、全局异常处理
-│   ├── security     # 用户、JWT、刷新会话、Spring Security 配置
+│   ├── security     # 用户、JWT、Redis 会话、黑名单、Spring Security 配置
 │   ├── chat         # AI 对话、会话、消息、额度、工具
 │   └── app          # Spring Boot 启动模块与运行配置
 ├── frontend         # React + TypeScript + Tailwind CSS
@@ -49,7 +49,7 @@ Controller 不直接访问 Mapper，Entity、DTO、VTO 不混放，业务实现�
 
 ## 本地启动
 
-环境要求：JDK 17+、Maven 3.9+、Bun 1.2+、本地 MongoDB。
+环境要求：JDK 17+、Maven 3.9+、Bun 1.2+、本地 MongoDB、Redis。
 
 当前默认数据库连接：
 
@@ -60,7 +60,7 @@ mongodb://root:123456@localhost:27017/aether_ai?authSource=admin
 数据库已经在运行时可跳过第一条命令。否则可使用仓库内的 Compose 文件：
 
 ```powershell
-docker compose up -d mongodb
+docker compose up -d mongodb redis
 ```
 
 启动后端：
@@ -97,6 +97,10 @@ mvn -pl app -am spring-boot:run
 | 变量 | 默认值 | 说明 |
 |---|---|---|
 | `MONGODB_URI` | 本地 `aether_ai` 数据库 | MongoDB 连接串 |
+| `REDIS_HOST` | `localhost` | Redis 地址 |
+| `REDIS_PORT` | `6379` | Redis 端口 |
+| `REDIS_PASSWORD` | `123456` | Redis 密码 |
+| `REDIS_DB` | `0` | Redis 数据库编号 |
 | `DEEPSEEK_API_KEY` | 空 | 设置后切换真实 AI |
 | `DEEPSEEK_MODEL` | `deepseek-chat` | 模型名称 |
 | `AI_DAILY_LIMIT` | `100` | 每用户每日对话次数 |
@@ -108,9 +112,11 @@ mvn -pl app -am spring-boot:run
 1. 登录或注册成功后，Access Token 仅在响应中返回，前端放在内存里，不写入 `localStorage`。
 2. Refresh Token 写入 `HttpOnly` Cookie，作用路径为 `/api/auth`，前端脚本不可读取。
 3. Access Token 默认 15 分钟过期；收到 401 时前端只发起一次刷新请求，并把并发的失败请求统一重试。
-4. Refresh Token 默认 7 天过期，每次刷新都会生成新 Token、更新 MongoDB 中对应的哈希并作废旧值。
-5. 退出登录会撤销服务端会话并清除 Cookie。
-6. 除公共鉴权接口外，所有 API 都要求 Access Token；会话与消息查询强制附带当前用户 ID。
+4. Refresh Token 默认 7 天过期，哈希和会话状态保存在 Redis；每次刷新都通过 Lua 脚本原子轮换。
+5. 每个用户只有一个活动 `sessionId`。新设备登录会撤销旧刷新会话，旧设备的 Access Token 也会因会话不匹配而失效。
+6. Access Token 包含 `jti` 与 `sid`。注销时 `jti` 写入 Redis 黑名单并设置与 Token 剩余寿命一致的 TTL。
+7. JWT 过滤器同时校验签名、黑名单和当前活动会话，确保旧设备无法继续访问。
+8. 除公共鉴权接口外，所有 API 都要求 Access Token；会话与消息查询强制附带当前用户 ID。
 
 主要接口：
 

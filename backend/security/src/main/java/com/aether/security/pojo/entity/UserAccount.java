@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -28,6 +29,8 @@ public class UserAccount {
     private UserRole role;
     private boolean enabled;
     private String avatarColor;
+
+    private BigDecimal credits;
 
     @CreatedDate
     private Instant createdAt;

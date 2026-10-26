@@ -1,31 +1,35 @@
 package com.aether.security.service.impl;
 
+import com.aether.common.constant.Credit;
 import com.aether.common.error.ApiException;
 import com.aether.security.config.SecurityProperties;
-import com.aether.security.mapper.RefreshSessionMapper;
 import com.aether.security.mapper.UserMapper;
 import com.aether.security.pojo.dto.AuthSession;
+import com.aether.security.pojo.dto.IssuedAccessToken;
 import com.aether.security.pojo.dto.LoginRequest;
 import com.aether.security.pojo.dto.RegisterRequest;
 import com.aether.security.pojo.entity.AuthenticatedUser;
-import com.aether.security.pojo.entity.RefreshSession;
 import com.aether.security.pojo.entity.UserAccount;
 import com.aether.security.pojo.entity.UserRole;
 import com.aether.security.pojo.vto.AuthResponse;
 import com.aether.security.pojo.vto.AuthView;
 import com.aether.security.service.AuthService;
 import com.aether.security.service.JwtService;
-import com.aether.security.service.RefreshSessionService;
+import com.aether.security.service.TokenSessionService;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
     private static final String[] AVATAR_COLORS = {
@@ -35,25 +39,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final RefreshSessionMapper refreshSessionRepository;
-    private final RefreshSessionService refreshSessionService;
+    private final TokenSessionService tokenSessionService;
     private final SecurityProperties properties;
+    private final Credit credit;
 
-    public AuthServiceImpl(
-            UserMapper userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService,
-            RefreshSessionMapper refreshSessionRepository,
-            RefreshSessionService refreshSessionService,
-            SecurityProperties properties
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.refreshSessionRepository = refreshSessionRepository;
-        this.refreshSessionService = refreshSessionService;
-        this.properties = properties;
-    }
 
     public AuthSession register(RegisterRequest request) {
         String username = request.username().trim().toLowerCase(Locale.ROOT);
@@ -76,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
                 .avatarColor(colorFor(username))
                 .createdAt(now)
                 .updatedAt(now)
+                .credits(BigDecimal.valueOf(credit.getCreditFree()))
                 .build();
         try {
             user = userRepository.insert(user);
@@ -107,16 +97,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Claims claims = jwtService.parse(refreshToken, JwtService.REFRESH);
-        String sessionId = claims.getId();
+        String sessionId = claims.get("sid", String.class);
         String userId = claims.getSubject();
-        RefreshSession session = refreshSessionRepository.findById(sessionId)
-                .orElseThrow(() -> ApiException.unauthorized("登录会话不存在"));
+        if (sessionId == null || !tokenSessionService.isActive(userId, sessionId)) {
+            throw ApiException.unauthorized("账号已在其他设备登录");
+        }
 
+        String storedHash = tokenSessionService.getRefreshTokenHash(sessionId);
         String currentHash = jwtService.hash(refreshToken);
-        if (session.isRevoked()
-                || !session.getUserId().equals(userId)
-                || !session.getTokenHash().equals(currentHash)
-                || session.getExpiresAt().isBefore(Instant.now())) {
+        if (storedHash == null || !storedHash.equals(currentHash)) {
             throw ApiException.unauthorized("刷新凭证已失效，请重新登录");
         }
 
@@ -125,35 +114,54 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> ApiException.unauthorized("用户账号不可用"));
 
         Instant now = Instant.now();
-        Instant nextExpiry = now.plus(properties.jwt().refreshTtl());
         String nextRefreshToken = jwtService.createRefreshToken(user, sessionId, now);
-        if (!refreshSessionService.rotate(
+        if (!tokenSessionService.rotateRefreshToken(
                 sessionId,
                 currentHash,
                 jwtService.hash(nextRefreshToken),
-                nextExpiry
+                properties.jwt().refreshTtl()
         )) {
             throw ApiException.unauthorized("会话已被轮换，请重新登录");
         }
 
-        long expiresIn = properties.jwt().accessTtl().toSeconds();
+        IssuedAccessToken accessToken = jwtService.createAccessToken(user, sessionId, now);
+        tokenSessionService.rotateAccessTokenId(
+                sessionId,
+                accessToken.tokenId(),
+                properties.jwt().accessTtl()
+        );
         AuthResponse response = new AuthResponse(
-                jwtService.createAccessToken(user, now),
-                expiresIn,
+                accessToken.token(),
+                properties.jwt().accessTtl().toSeconds(),
                 userRepository.toView(user)
         );
         return new AuthSession(response, nextRefreshToken);
     }
 
-    public void logout(String refreshToken) {
-        if (!StringUtils.hasText(refreshToken)) {
+    public void logout(String refreshToken, String accessToken) {
+        Claims refreshClaims = tryParse(refreshToken, JwtService.REFRESH);
+        Claims accessClaims = tryParse(accessToken, JwtService.ACCESS);
+
+        if (refreshClaims != null) {
+            String sessionId = refreshClaims.get("sid", String.class);
+            String userId = refreshClaims.getSubject();
+            String accessTokenId = matchingAccessTokenId(accessClaims, sessionId);
+            tokenSessionService.revoke(
+                    userId,
+                    sessionId,
+                    accessTokenId,
+                    remainingAccessTtl(accessClaims)
+            );
             return;
         }
-        try {
-            Claims claims = jwtService.parse(refreshToken, JwtService.REFRESH);
-            refreshSessionService.revoke(claims.getId());
-        } catch (ApiException ignored) {
-            // Expired or malformed credentials are already unusable.
+
+        if (accessClaims != null) {
+            tokenSessionService.revoke(
+                    accessClaims.getSubject(),
+                    accessClaims.get("sid", String.class),
+                    accessClaims.getId(),
+                    remainingAccessTtl(accessClaims)
+            );
         }
     }
 
@@ -168,28 +176,54 @@ public class AuthServiceImpl implements AuthService {
         Instant now = Instant.now();
         String sessionId = UUID.randomUUID().toString();
         String refreshToken = jwtService.createRefreshToken(user, sessionId, now);
-        refreshSessionService.create(RefreshSession.builder()
-                .id(sessionId)
-                .userId(user.getId())
-                .tokenHash(jwtService.hash(refreshToken))
-                .revoked(false)
-                .createdAt(now)
-                .lastUsedAt(now)
-                .expiresAt(now.plus(properties.jwt().refreshTtl()))
-                .build());
+        IssuedAccessToken accessToken = jwtService.createAccessToken(user, sessionId, now);
+        tokenSessionService.activate(
+                user.getId(),
+                sessionId,
+                jwtService.hash(refreshToken),
+                properties.jwt().refreshTtl(),
+                accessToken.tokenId(),
+                properties.jwt().accessTtl()
+        );
 
         AuthResponse response = new AuthResponse(
-                jwtService.createAccessToken(user, now),
+                accessToken.token(),
                 properties.jwt().accessTtl().toSeconds(),
                 userRepository.toView(user)
         );
         return new AuthSession(response, refreshToken);
     }
 
+    private Claims tryParse(String token, String expectedType) {
+        if (!StringUtils.hasText(token)) {
+            return null;
+        }
+        try {
+            return jwtService.parse(token, expectedType);
+        } catch (ApiException ignored) {
+            return null;
+        }
+    }
+
+    private String matchingAccessTokenId(Claims accessClaims, String sessionId) {
+        if (accessClaims == null || sessionId == null) {
+            return null;
+        }
+        return sessionId.equals(accessClaims.get("sid", String.class))
+                ? accessClaims.getId()
+                : null;
+    }
+
+    private Duration remainingAccessTtl(Claims accessClaims) {
+        if (accessClaims == null || accessClaims.getExpiration() == null) {
+            return properties.jwt().accessTtl();
+        }
+        Duration remaining = Duration.between(Instant.now(), accessClaims.getExpiration().toInstant());
+        return remaining.isNegative() ? Duration.ZERO : remaining;
+    }
+
     private String colorFor(String username) {
         return AVATAR_COLORS[Math.floorMod(username.hashCode(), AVATAR_COLORS.length)];
     }
 }
-
-
 

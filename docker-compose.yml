@@ -1,4 +1,19 @@
 services:
+  redis:
+    image: redis:8-alpine
+    container_name: aether-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "123456"]
+    volumes:
+      - aether_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "123456", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   mongodb:
     image: mongo:8
     container_name: aether-mongodb
@@ -31,4 +46,4 @@ services:
 
 volumes:
   aether_mongo_data:
-
+  aether_redis_data:
