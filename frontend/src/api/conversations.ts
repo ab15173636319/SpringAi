@@ -1,5 +1,5 @@
 import type { ChatMessage, Conversation } from "../types";
-import { api } from "./client";
+import { api } from "./http";
 
 export async function listConversations() {
   return api.get<Conversation[]>("/conversations");
@@ -18,11 +18,11 @@ export async function toggleConversationPin(id: string) {
 }
 
 export async function deleteConversation(id: string) {
-  await api.delete(`/conversations/${id}`);
+  await api.delete<null>(`/conversations/${id}`);
 }
 
 export async function clearConversation(id: string) {
-  await api.post(`/conversations/${id}/clear`);
+  await api.post<null>(`/conversations/${id}/clear`);
 }
 
 export async function getMessages(id: string) {

@@ -1,8 +1,8 @@
-import type { ApiResult } from "../types";
+import type { DeleteMessagesRequest, Result } from "../types";
 import { getAccessToken } from "../lib/token";
-import { api, apiClient, refreshAccessToken } from "./client";
+import { api, apiBaseUrl, refreshAccessToken } from "./http";
 
-const baseURL = String(apiClient.defaults.baseURL ?? "/api");
+const baseURL = apiBaseUrl();
 
 async function openStream(conversationId: string, message: string, signal: AbortSignal) {
   const send = () =>
@@ -12,7 +12,9 @@ async function openStream(conversationId: string, message: string, signal: Abort
       signal,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getAccessToken() ?? ""}`,
+        ...(getAccessToken()
+            ? { Authorization: `Bearer ${getAccessToken()}` }
+            : {}),
       },
       body: JSON.stringify({ message }),
     });
@@ -25,7 +27,7 @@ async function openStream(conversationId: string, message: string, signal: Abort
   if (!response.ok) {
     let messageText = "发送消息失败，请稍后重试";
     try {
-      const payload = (await response.json()) as ApiResult<never>;
+      const payload = (await response.json()) as Result<never>;
       messageText = payload.message ?? messageText;
     } catch {
       // The server may close a stream before a JSON body is available.
@@ -60,15 +62,9 @@ export async function* streamChat(
   }
 }
 
-
-export interface DeleteMessagesPayload {
-  conversationId: string;
-  messageIds: string[];
-}
-
 export async function deleteMessages({
   conversationId,
   messageIds,
-}: DeleteMessagesPayload) {
-  await api.post<void>("/chat/delete", { conversationId, messageIds });
+}: DeleteMessagesRequest) {
+  await api.post<null>("/chat/delete", { conversationId, messageIds });
 }

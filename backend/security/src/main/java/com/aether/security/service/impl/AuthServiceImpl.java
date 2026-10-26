@@ -18,6 +18,7 @@ import com.aether.security.service.JwtService;
 import com.aether.security.service.TokenSessionService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private static final String[] AVATAR_COLORS = {
             "#7C3AED", "#0891B2", "#DB2777", "#D97706", "#059669", "#4F46E5"
@@ -48,10 +50,10 @@ public class AuthServiceImpl implements AuthService {
         String username = request.username().trim().toLowerCase(Locale.ROOT);
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByUsername(username)) {
-            throw ApiException.conflict("这个用户名已经被使用");
+            throw new BusinessException(ResponseCode.CONFLICT, "这个用户名已经被使用");
         }
         if (userRepository.existsByEmail(email)) {
-            throw ApiException.conflict("这个邮箱已经注册");
+            throw new BusinessException(ResponseCode.CONFLICT, "这个邮箱已经注册");
         }
 
         Instant now = Instant.now();
@@ -70,11 +72,16 @@ public class AuthServiceImpl implements AuthService {
         try {
             user = userRepository.insert(user);
         } catch (DuplicateKeyException exception) {
-            throw ApiException.conflict("用户名或邮箱已经被使用");
+            throw new BusinessException(
+                    ResponseCode.CONFLICT,
+                    "用户名或邮箱已经被使用",
+                    exception
+            );
         }
         return issueSession(user);
     }
 
+    @Override
     public AuthSession login(LoginRequest request) {
         String identifier = request.identifier().trim().toLowerCase(Locale.ROOT);
         UserAccount user = identifier.contains("@")
@@ -82,7 +89,10 @@ public class AuthServiceImpl implements AuthService {
                 : userRepository.findByUsername(identifier).orElse(null);
         if (user == null || !user.isEnabled()
                 || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw ApiException.unauthorized("用户名、邮箱或密码不正确");
+            throw new BusinessException(
+                    ResponseCode.UNAUTHORIZED,
+                    "用户名、邮箱或密码不正确"
+            );
         }
 
         user.setLastLoginAt(Instant.now());
@@ -91,9 +101,10 @@ public class AuthServiceImpl implements AuthService {
         return issueSession(user);
     }
 
+    @Override
     public AuthSession refresh(String refreshToken) {
         if (!StringUtils.hasText(refreshToken)) {
-            throw ApiException.unauthorized("缺少刷新凭证");
+            throw new BusinessException(ResponseCode.UNAUTHORIZED, "缺少刷新凭证");
         }
 
         Claims claims = jwtService.parse(refreshToken, JwtService.REFRESH);
@@ -111,7 +122,10 @@ public class AuthServiceImpl implements AuthService {
 
         UserAccount user = userRepository.findById(userId)
                 .filter(UserAccount::isEnabled)
-                .orElseThrow(() -> ApiException.unauthorized("用户账号不可用"));
+                .orElseThrow(() -> new BusinessException(
+                        ResponseCode.UNAUTHORIZED,
+                        "用户账号不可用"
+                ));
 
         Instant now = Instant.now();
         String nextRefreshToken = jwtService.createRefreshToken(user, sessionId, now);
@@ -121,7 +135,10 @@ public class AuthServiceImpl implements AuthService {
                 jwtService.hash(nextRefreshToken),
                 properties.jwt().refreshTtl()
         )) {
-            throw ApiException.unauthorized("会话已被轮换，请重新登录");
+            throw new BusinessException(
+                    ResponseCode.UNAUTHORIZED,
+                    "会话已被轮换，请重新登录"
+            );
         }
 
         IssuedAccessToken accessToken = jwtService.createAccessToken(user, sessionId, now);
@@ -165,10 +182,14 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
     public AuthView current(AuthenticatedUser principal) {
         UserAccount user = userRepository.findById(principal.id())
                 .filter(UserAccount::isEnabled)
-                .orElseThrow(() -> ApiException.unauthorized("用户账号不可用"));
+                .orElseThrow(() -> new BusinessException(
+                        ResponseCode.UNAUTHORIZED,
+                        "用户账号不可用"
+                ));
         return userRepository.toView(user);
     }
 

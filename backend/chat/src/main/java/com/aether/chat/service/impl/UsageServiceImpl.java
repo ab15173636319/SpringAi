@@ -5,6 +5,7 @@ import com.aether.chat.mapper.DailyUsageMapper;
 import com.aether.chat.pojo.entity.DailyUsage;
 import com.aether.chat.pojo.vto.UsageView;
 import com.aether.chat.service.UsageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -19,22 +20,13 @@ import java.time.ZoneId;
  * 用量服务实现：按「用户 + 日期」累计对话次数，基于 MongoDB 原子自增控制并发。
  */
 @Service
+@RequiredArgsConstructor
 public class UsageServiceImpl implements UsageService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Shanghai");
 
     private final DailyUsageMapper repository;
     private final MongoTemplate mongoTemplate;
     private final AiProperties properties;
-
-    public UsageServiceImpl(
-            DailyUsageMapper repository,
-            MongoTemplate mongoTemplate,
-            AiProperties properties
-    ) {
-        this.repository = repository;
-        this.mongoTemplate = mongoTemplate;
-        this.properties = properties;
-    }
 
     /**
      * 尝试为当天占用一次额度。

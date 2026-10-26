@@ -1,5 +1,5 @@
 import type { SystemInfo, Usage } from "../types";
-import { api } from "./client";
+import { api } from "./http";
 
 export async function getUsage() {
   return api.get<Usage>("/usage");

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./Button";
 import { useChatStore } from "../stores/chat";
-import Modal from "./base/Model";
+import Modal from "./base/Modal";
 
 interface DeleteBarProps {
   onConfirm?: () => void;
@@ -36,7 +36,13 @@ export function DeleteBar({ onConfirm, onCancel }: DeleteBarProps) {
 
   return (
     <div className="w-full flex justify-center">
-      <Modal title="确定删除对话？" description="删除后无法恢复！" open={isOpen} onOk={handleConfirm} onCancel={() => setOpen((pre) => !pre)} />
+      <Modal
+        title="删除选中的消息？"
+        description="选中的消息将被永久删除，会话本身会保留。"
+        open={isOpen}
+        onOk={handleConfirm}
+        onCancel={() => setOpen((pre) => !pre)}
+      />
       <div className="w-full max-w-3xl px-4 pb-10 pt-7 flex justify-end gap-5">
         <Button
           type="button"

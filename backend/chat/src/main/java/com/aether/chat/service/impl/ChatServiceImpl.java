@@ -10,24 +10,26 @@ import com.aether.chat.service.UsageService;
 import com.aether.chat.tool.UtilityTools;
 import com.aether.common.error.ApiException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.SignalType;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 对话服务实现：校验会话与额度、拼装上下文、调用大模型流式输出，并持久化问答消息。
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -42,6 +44,8 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageMapper messageRepository;
     private final ConversationService conversationService;
     private final UsageService usageService;
+    private final AiProperties properties;
+    private final UtilityTools utilityTools;
     private final ChatClient chatClient;
 
     /**
@@ -56,56 +60,55 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public Flux<String> stream(String userId, String conversationId, String prompt) {
-        return Flux.defer(() -> doStream(userId, conversationId, prompt));
-    }
+        return Flux.defer(() -> {
+            conversationService.requireOwned(userId, conversationId);
+            if (!usageService.tryConsume(userId)) {
+                return Flux.error(ApiException.tooManyRequests("今日对话额度已用完，请在明天继续"));
+            }
 
-    /**
-     * 实际对话流程：被 {@link #stream} 包在 defer 中，保证校验、扣额度、写库等副作用只在该流被订阅时执行一次。
-     */
-    private Flux<String> doStream(String userId, String conversationId, String prompt) {
-        conversationService.requireOwned(userId, conversationId);
-        if (!usageService.tryConsume(userId)) {
-            return Flux.error(ApiException.tooManyRequests("今日对话额度已用完，请在明天继续"));
-        }
+            List<Message> context = loadContext(conversationId, userId);
+            ChatMessage userMessage = messageRepository.insert(ChatMessage.builder()
+                    .conversationId(conversationId)
+                    .userId(userId)
+                    .role(MessageRole.USER)
+                    .content(prompt)
+                    .createdAt(Instant.now())
+                    .build());
 
-        List<Message> context = loadContext(conversationId, userId);
-        saveMessage(conversationId, userId, MessageRole.USER, prompt);
-        conversationService.markTitleFromFirstMessage(userId, conversationId, prompt);
-        conversationService.touch(userId, conversationId);
+            conversationService.markTitleFromFirstMessage(userId, conversationId, prompt);
+            conversationService.touch(userId, conversationId);
 
-        StringBuilder answer = new StringBuilder();
-        return
-                liveStream(context, prompt)
-                        .doOnNext(answer::append) // 累积回答
-                        // doFinally 对完成、异常、取消三种信号都只触发一次，无需额外的去重标记
-                        .doFinally(signal -> {
-                            log.info("对话结束，回答：{}", answer);
-                            if (!answer.isEmpty()) {
-                                saveMessage(conversationId, userId, MessageRole.ASSISTANT, answer.toString());
-                                conversationService.touch(userId, conversationId);
-                            }
-                        })
-                        .onErrorMap(error -> error instanceof ApiException
-                                ? error
-                                : new ApiException(HttpStatus.BAD_GATEWAY, "AI 服务暂时不可用，请稍后重试"));
-    }
+            Flux<String> response = properties.isLive() && chatClient != null
+                    ? liveStream(context, prompt)
+                    : demoStream(prompt);
 
-    /**
-     * 持久化一条消息。
-     *
-     * @param conversationId 会话 ID
-     * @param userId         用户 ID
-     * @param role           消息角色
-     * @param content        消息内容
-     */
-    private void saveMessage(String conversationId, String userId, MessageRole role, String content) {
-        messageRepository.insert(ChatMessage.builder()
-                .conversationId(conversationId)
-                .userId(userId)
-                .role(role)
-                .content(content)
-                .createdAt(Instant.now())
-                .build());
+            StringBuilder answer = new StringBuilder();
+            AtomicBoolean persisted = new AtomicBoolean(false);
+            Runnable persistResponse = () -> {
+                if (persisted.compareAndSet(false, true) && !answer.isEmpty()) {
+                    messageRepository.insert(ChatMessage.builder()
+                            .conversationId(conversationId)
+                            .userId(userId)
+                            .role(MessageRole.ASSISTANT)
+                            .content(answer.toString())
+                            .createdAt(Instant.now())
+                            .build());
+                    conversationService.touch(userId, conversationId);
+                }
+            };
+
+            return response
+                    .doOnNext(answer::append)
+                    .doOnComplete(persistResponse)
+                    .doFinally(signal -> {
+                        if (signal != SignalType.ON_COMPLETE) {
+                            persistResponse.run();
+                        }
+                    })
+                    .onErrorMap(error -> error instanceof ApiException
+                            ? error
+                            : new ApiException(HttpStatus.BAD_GATEWAY, "AI 服务暂时不可用，请稍后重试"));
+        });
     }
 
     /**
@@ -120,9 +123,26 @@ public class ChatServiceImpl implements ChatService {
                 .system(SYSTEM_PROMPT)
                 .messages(context)
                 .user(prompt)
-                .advisors()
+                .tools(utilityTools)
                 .stream()
                 .content();
+    }
+
+    /**
+     * 本地演示模式：未配置 API Key 时用固定文案分块延时输出，便于前端联调。
+     *
+     * @param prompt 用户本轮输入，会被回显在回答中
+     * @return 模拟的流式回答
+     */
+    private Flux<String> demoStream(String prompt) {
+        List<String> chunks = List.of(
+                "当前后端运行在 **本地演示模式**。\n\n",
+                "你发送的内容已经写入 MongoDB，会话管理、流式显示和双 Token 鉴权都可以正常验证。\n\n",
+                "你刚才的问题是：\n\n> ",
+                prompt.replace("\n", "\n> "),
+                "\n\n配置 `DEEPSEEK_API_KEY` 并重启后端后，这里会自动切换为 DeepSeek 的真实流式回答。"
+        );
+        return Flux.fromIterable(chunks).delayElements(Duration.ofMillis(35));
     }
 
     /**
